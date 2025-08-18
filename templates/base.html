@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Staff Management System{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .hover-scale { transition: transform 0.2s; }
+        .hover-scale:hover { transform: scale(1.02); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="gradient-bg shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-users text-white text-2xl"></i>
+                    <h1 class="text-white text-xl font-bold">Staff Management System</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'core:staff_list' %}" class="text-white hover:text-gray-200 px-3 py-2 rounded transition duration-200">
+                        <i class="fas fa-list mr-2"></i>Staff List
+                    </a>
+                    <a href="{% url 'core:staff_create' %}" class="bg-white text-purple-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition duration-200">
+                        <i class="fas fa-plus mr-2"></i>Add Staff
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            {% for message in messages %}
+                <div class="mb-4 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-100 border border-red-400 text-red-700{% elif message.tags == 'success' %}bg-green-100 border border-green-400 text-green-700{% else %}bg-blue-100 border border-blue-400 text-blue-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script>
+        // Basic JavaScript functions for interactivity
+        function confirmDelete(staffId, staffName) {
+            if (confirm(`Are you sure you want to delete ${staffName}?`)) {
+                // Handle delete action
+                window.location.href = `/staff/${staffId}/delete/`;
+            }
+        }
+
+        function filterTable() {
+            // Handle table filtering
+            const searchInput = document.getElementById('searchInput');
+            const deptFilter = document.getElementById('deptFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            // Build query string
+            const params = new URLSearchParams();
+            if (searchInput.value) params.append('search', searchInput.value);
+            if (deptFilter.value) params.append('department', deptFilter.value);
+            if (statusFilter.value) params.append('status', statusFilter.value);
+            
+            window.location.href = `{% url 'core:staff_list' %}?${params.toString()}`;
+        }
+    </script>
+</body>
+</html>
