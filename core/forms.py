@@ -8,7 +8,7 @@ class StaffForm(forms.ModelForm):
         exclude = ['unique_id', 'created_at', 'updated_at']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
-            'employment_date': forms.DateInput(attrs={'type': 'date'}),
+            'employment_date': forms.DateInput(attrs={'type': 'date', 'initial': timezone.now()}),
             'address': forms.Textarea(attrs={'rows': 3}),
             'gender': forms.Select(),
             'employment_status': forms.Select(),
