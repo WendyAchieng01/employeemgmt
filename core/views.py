@@ -9,6 +9,50 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 
+def dashboard(request):
+    # Get query parameters
+    search_query = request.GET.get('search', '')
+    department_id = request.GET.get('department', '')
+    status = request.GET.get('status', '')
+
+    # Base queryset
+    staff = Staff.objects.all()
+    present = Staff.objects.filter(employment_status='active')
+    print(present)
+    on_leave = staff.filter(employment_status='Inactive')
+
+    # Apply search filter (Name, ID, Email, KRA PIN)
+    if search_query:
+        staff = staff.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(middle_name__icontains=search_query) |
+            Q(unique_id__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(kra_pin__icontains=search_query)
+        )
+
+    # Apply department filter
+    if department_id:
+        staff = staff.filter(department__id=department_id)
+
+    # Apply status filter
+    if status:
+        staff = staff.filter(employment_status=status)
+
+    # Get departments with staff count for filter dropdown
+    departments = Department.objects.annotate(staff_count=Count('staff_members'))
+
+    context = {
+        'staff_list': staff,
+        'departments': departments,
+        'search_query': search_query,
+        'current_dept': department_id,
+        'current_status': status,
+        'leave': on_leave,
+        'present': present,
+    }
+    return render(request, 'dashboard.html', context)
 
 
 def staff_list(request):
