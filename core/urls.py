@@ -10,4 +10,5 @@ urlpatterns = [
     path('<str:unique_id>/update/', views.staff_update, name='staff_update'),
     path('department/<int:dept_id>/', views.department_staff, name='department_staff'),
     path('api/staff/', views.staff_api, name='staff_api'),
+    path('staff/<str:staff_id>/delete/', views.delete_staff, name='delete_staff'),
 ]

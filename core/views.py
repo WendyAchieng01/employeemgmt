@@ -4,6 +4,12 @@ from django.db.models import Q, Count
 from django.http import JsonResponse
 from .models import Staff, Department
 from .forms import StaffForm
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
+
+
 
 def staff_list(request):
     """Display all staff members with filtering and search"""
@@ -107,3 +113,14 @@ def staff_api(request):
                 'employment_date': staff.employment_date.strftime('%Y-%m-%d')
             })
         return JsonResponse({'staff': staff_data})
+
+@require_POST
+@csrf_protect
+@login_required
+def delete_staff(request, staff_id):
+    staff = get_object_or_404(Staff, unique_id=staff_id)
+    try:
+        staff.delete()
+        return HttpResponse(status=200)
+    except Exception as e:
+        return HttpResponse(status=500)
