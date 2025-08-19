@@ -93,21 +93,18 @@
             }
             return cookieValue;
         }
-
-        function filterTable() {
-            // Handle table filtering
+        document.getElementById('staffFilterForm').addEventListener('submit', function(event) {
+            // For now, let the form submit naturally via GET
+            // Ensure empty fields are included in the query string
             const searchInput = document.getElementById('searchInput');
             const deptFilter = document.getElementById('deptFilter');
             const statusFilter = document.getElementById('statusFilter');
             
-            // Build query string
-            const params = new URLSearchParams();
-            if (searchInput.value) params.append('search', searchInput.value);
-            if (deptFilter.value) params.append('department', deptFilter.value);
-            if (statusFilter.value) params.append('status', statusFilter.value);
-            
-            window.location.href = `{% url 'core:staff_list' %}?${params.toString()}`;
-        }
+            // Remove empty values to clean up the URL (optional)
+            if (!searchInput.value) searchInput.removeAttribute('name');
+            if (!deptFilter.value) deptFilter.removeAttribute('name');
+            if (!statusFilter.value) statusFilter.removeAttribute('name');
+        });
     </script>
 </body>
 </html>

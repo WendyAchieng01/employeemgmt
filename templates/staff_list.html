@@ -14,13 +14,14 @@
 
         <!-- Filters and Search -->
         <div class="bg-white rounded-lg card-shadow p-6 mb-6">
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <form method="GET" id="staffFilterForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {% csrf_token %}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Search Staff</label>
                     <div class="relative">
-                        <input type="text" id="searchInput" name="search" value="{{ search_query }}" 
-                               placeholder="Name, ID, Email..." 
-                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <input type="text" id="searchInput" name="search" value="{{ search_query|default:'' }}"
+                            placeholder="Name, ID, Email, KRA PIN..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                         <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                     </div>
                 </div>
@@ -154,4 +155,19 @@
         </div>
     </div>
 </div>
+<script>
+    document.getElementById('staffFilterForm').addEventListener('submit', function(event) {
+        // Optional: Add client-side validation or enhancements here if needed
+        // For now, let the form submit naturally via GET
+        // Ensure empty fields are included in the query string
+        const searchInput = document.getElementById('searchInput');
+        const deptFilter = document.getElementById('deptFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        
+        // Remove empty values to clean up the URL (optional)
+        if (!searchInput.value) searchInput.removeAttribute('name');
+        if (!deptFilter.value) deptFilter.removeAttribute('name');
+        if (!statusFilter.value) statusFilter.removeAttribute('name');
+    });
+</script>
 {% endblock %}
