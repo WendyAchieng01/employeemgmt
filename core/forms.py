@@ -8,10 +8,11 @@ class StaffForm(forms.ModelForm):
         exclude = ['unique_id', 'created_at', 'updated_at']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
-            'employment_date': forms.DateInput(attrs={'type': 'date', 'initial': timezone.now()}),
+            'employment_date': forms.DateInput(attrs={'type': 'date'}),
             'address': forms.Textarea(attrs={'rows': 3}),
             'gender': forms.Select(),
             'employment_status': forms.Select(),
+            'kra_pin': forms.TextInput(attrs={'placeholder': ''}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -40,6 +41,15 @@ class StaffForm(forms.ModelForm):
                 raise forms.ValidationError("National ID must be at least 6 characters long")
         return national_id
 
+    def clean_kra_pin(self):
+        """Validate KRA PIN format if provided"""
+        kra_pin = self.cleaned_data.get('kra_pin')
+        if kra_pin:
+            import re
+            if not re.match(r'^[A-Za-z][0-9]{9}[A-Za-z]$', kra_pin):
+                raise forms.ValidationError("KRA PIN must be 11 characters: 1 letter, 9 digits, 1 letter")
+        return kra_pin
+
     def clean(self):
         """Custom validation to check for potential duplicate staff IDs"""
         cleaned_data = super().clean()
@@ -48,9 +58,9 @@ class StaffForm(forms.ModelForm):
         employment_date = cleaned_data.get('employment_date')
         
         if national_id and department and employment_date:
-            # Generate the potential staff ID with slash
+            # Generate the potential staff ID with hyphen (per model)
             clean_national_id = ''.join(c for c in national_id if c.isalnum())
-            potential_unique_id = f"{department.code}{clean_national_id}/{employment_date.year}"
+            potential_unique_id = f"{department.code}{clean_national_id}-{employment_date.year}"
             
             # Check if this staff ID already exists (exclude current instance if updating)
             existing_staff = Staff.objects.filter(unique_id=potential_unique_id)

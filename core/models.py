@@ -53,9 +53,17 @@ class Staff(models.Model):
         verbose_name=_("Employment Status")
     )
     salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name=_("Salary"))
-    emergency_contact_name = models.CharField(max_length=100, verbose_name=_("Emergency Contact Name"))
-    emergency_contact_phone = models.CharField(max_length=15, verbose_name=_("Emergency Contact Phone"))
-    emergency_contact_relationship = models.CharField(max_length=50, verbose_name=_("Emergency Contact Relationship"))
+    emergency_contact_name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Emergency Contact Name"))
+    emergency_contact_phone = models.CharField(max_length=15, blank=True, null=True, verbose_name=_("Emergency Contact Phone"))
+    emergency_contact_relationship = models.CharField(max_length=50, blank=True, null=True, verbose_name=_("Emergency Contact Relationship"))
+    kra_pin = models.CharField(
+        max_length=11,
+        unique=True,
+        blank=True,
+        null=True,
+        validators=[RegexValidator(r'^[A-Za-z][0-9]{9}[A-Za-z]$', 'KRA PIN must be 11 characters: 1 letter, 9 digits, 1 letter')],
+        verbose_name=_("KRA PIN")
+    )
     unique_id = models.CharField(max_length=30, unique=True, editable=False, verbose_name=_("Unique ID"))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

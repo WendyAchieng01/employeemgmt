@@ -12,39 +12,43 @@ from django.views.decorators.csrf import csrf_protect
 
 
 def staff_list(request):
-    """Display all staff members with filtering and search"""
-    staff_list = Staff.objects.select_related('department').all()
-    departments = Department.objects.annotate(staff_count=Count('staff_members'))
-    
-    # Filter by department
-    dept_filter = request.GET.get('department')
-    if dept_filter:
-        staff_list = staff_list.filter(department__id=dept_filter)
-    
-    # Filter by employment status
-    status_filter = request.GET.get('status')
-    if status_filter:
-        staff_list = staff_list.filter(employment_status=status_filter)
-    
-    # Search functionality
-    search_query = request.GET.get('search')
+    # Get query parameters
+    search_query = request.GET.get('search', '')
+    department_id = request.GET.get('department', '')
+    status = request.GET.get('status', '')
+
+    # Base queryset
+    staff = Staff.objects.all()
+
+    # Apply search filter (Name, ID, Email, KRA PIN)
     if search_query:
-        staff_list = staff_list.filter(
+        staff = staff.filter(
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
+            Q(middle_name__icontains=search_query) |
             Q(unique_id__icontains=search_query) |
             Q(email__icontains=search_query) |
-            Q(position__icontains=search_query)
+            Q(kra_pin__icontains=search_query)
         )
-    
+
+    # Apply department filter
+    if department_id:
+        staff = staff.filter(department__id=department_id)
+
+    # Apply status filter
+    if status:
+        staff = staff.filter(employment_status=status)
+
+    # Get departments with staff count for filter dropdown
+    departments = Department.objects.annotate(staff_count=Count('staff_members'))
+
     context = {
-        'staff_list': staff_list,
+        'staff_list': staff,
         'departments': departments,
-        'current_dept': dept_filter,
-        'current_status': status_filter,
         'search_query': search_query,
+        'current_dept': department_id,
+        'current_status': status,
     }
-    
     return render(request, 'staff_list.html', context)
 
 def staff_create(request):
