@@ -17,9 +17,8 @@ def dashboard(request):
 
     # Base queryset
     staff = Staff.objects.all()
-    present = Staff.objects.filter(employment_status='active')
-    print(present)
-    on_leave = staff.filter(employment_status='Inactive')
+    present = staff.filter(employment_status='ACTIVE')
+    on_leave = staff.filter(employment_status='INACTIVE')
 
     # Apply search filter (Name, ID, Email, KRA PIN)
     if search_query:
