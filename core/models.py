@@ -72,13 +72,11 @@ class Staff(models.Model):
         if not self.unique_id:
             if not self.national_id:
                 raise ValueError("National ID is required to generate unique ID")
-            if not self.department:
-                raise ValueError("Department is required to generate unique ID")
             if not self.employment_date:
                 raise ValueError("Employment date is required to generate unique ID")
             # Generate unique_id: department code + cleaned national ID + / + employment year
             clean_national_id = ''.join(c for c in self.national_id if c.isalnum())
-            self.unique_id = f"{self.department.code}{clean_national_id}-{self.employment_date.year}"
+            self.unique_id = f"MLKH{clean_national_id}{self.employment_date.year}"
         super().save(*args, **kwargs)
 
     @property
