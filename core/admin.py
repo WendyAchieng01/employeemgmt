@@ -17,11 +17,11 @@ class DepartmentAdmin(admin.ModelAdmin):
 class StaffAdmin(admin.ModelAdmin):
     list_display = [
         'unique_id', 'full_name', 'department', 'position', 
-        'employment_date', 'employment_status'
+        'employment_date', 'employment_status', 'is_admin'
     ]
     list_filter = [
         'department', 'employment_status', 'gender', 
-        'employment_date', 'created_at'
+        'employment_date', 'created_at', 'is_admin'
     ]
     search_fields = [
         'unique_id', 'first_name', 'last_name', 'email', 
@@ -43,7 +43,7 @@ class StaffAdmin(admin.ModelAdmin):
         ('Employment Information', {
             'fields': (
                 'department', 'position', 'employment_date',
-                'employment_status', 'salary'
+                'employment_status', 'salary', 'is_admin'
             )
         }),
         ('Emergency Contact', {

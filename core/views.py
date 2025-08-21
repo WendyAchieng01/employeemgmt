@@ -8,6 +8,11 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import Group
+
+def is_admin(user):
+    return user.groups.filter(name='Admin').exists()
 
 def dashboard(request):
     # Get query parameters
@@ -54,16 +59,14 @@ def dashboard(request):
     return render(request, 'dashboard.html', context)
 
 
+@login_required
 def staff_list(request):
-    # Get query parameters
     search_query = request.GET.get('search', '')
     department_id = request.GET.get('department', '')
     status = request.GET.get('status', '')
 
-    # Base queryset
     staff = Staff.objects.all()
 
-    # Apply search filter (Name, ID, Email, KRA PIN)
     if search_query:
         staff = staff.filter(
             Q(first_name__icontains=search_query) |
@@ -74,15 +77,12 @@ def staff_list(request):
             Q(kra_pin__icontains=search_query)
         )
 
-    # Apply department filter
     if department_id:
         staff = staff.filter(department__id=department_id)
 
-    # Apply status filter
     if status:
         staff = staff.filter(employment_status=status)
 
-    # Get departments with staff count for filter dropdown
     departments = Department.objects.annotate(staff_count=Count('staff_members'))
 
     context = {
@@ -94,8 +94,9 @@ def staff_list(request):
     }
     return render(request, 'staff_list.html', context)
 
+@login_required
+@user_passes_test(is_admin)
 def staff_create(request):
-    """Create a new staff member"""
     if request.method == 'POST':
         form = StaffForm(request.POST)
         if form.is_valid():
@@ -104,7 +105,6 @@ def staff_create(request):
             return redirect('core:staff_detail', unique_id=staff.unique_id)
         else:
             messages.error(request, 'Please correct the errors below.')
-            print(form.errors)
     else:
         form = StaffForm()
     
@@ -113,12 +113,14 @@ def staff_create(request):
         'title': 'Add New Staff Member'
     })
 
+@login_required
 def staff_detail(request, unique_id):
-    staff = Staff.objects.get(unique_id=unique_id)
+    staff = get_object_or_404(Staff, unique_id=unique_id)
     return render(request, 'staff_detail.html', {'staff': staff})
 
+@login_required
+@user_passes_test(is_admin)
 def staff_update(request, unique_id):
-    """Update an existing staff member"""
     staff = get_object_or_404(Staff, unique_id=unique_id)
     
     if request.method == 'POST':
@@ -136,8 +138,8 @@ def staff_update(request, unique_id):
         'title': f'Update {staff.full_name}'
     })
 
+@login_required
 def department_staff(request, dept_id):
-    """List all staff members in a specific department"""
     department = get_object_or_404(Department, id=dept_id)
     staff_list = Staff.objects.filter(department=department)
     
@@ -146,8 +148,8 @@ def department_staff(request, dept_id):
         'staff_list': staff_list
     })
 
+@login_required
 def staff_api(request):
-    """API endpoint for staff data (for AJAX requests)"""
     if request.method == 'GET':
         staff_data = []
         for staff in Staff.objects.select_related('department'):
@@ -161,13 +163,17 @@ def staff_api(request):
             })
         return JsonResponse({'staff': staff_data})
 
+@login_required
+@user_passes_test(is_admin)
 @require_POST
 @csrf_protect
-@login_required
 def delete_staff(request, staff_id):
     staff = get_object_or_404(Staff, unique_id=staff_id)
     try:
+        user = staff.user
         staff.delete()
+        if user:
+            user.delete()
         return HttpResponse(status=200)
     except Exception as e:
         return HttpResponse(status=500)

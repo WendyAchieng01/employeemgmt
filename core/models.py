@@ -2,6 +2,8 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
+from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name=_("Department Name"))
@@ -34,6 +36,7 @@ class Staff(models.Model):
         ('RETIRED', 'Retired'),
     ]
 
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("User Account"))
     first_name = models.CharField(max_length=50, verbose_name=_("First Name"))
     middle_name = models.CharField(max_length=50, blank=True, null=True, verbose_name=_("Middle Name"))
     last_name = models.CharField(max_length=50, verbose_name=_("Last Name"))
@@ -65,6 +68,7 @@ class Staff(models.Model):
         verbose_name=_("KRA PIN")
     )
     unique_id = models.CharField(max_length=30, unique=True, editable=False, verbose_name=_("Unique ID"))
+    is_admin = models.BooleanField(default=False, verbose_name=_("Is Admin"))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -74,9 +78,32 @@ class Staff(models.Model):
                 raise ValueError("National ID is required to generate unique ID")
             if not self.employment_date:
                 raise ValueError("Employment date is required to generate unique ID")
-            # Generate unique_id: department code + cleaned national ID + / + employment year
             clean_national_id = ''.join(c for c in self.national_id if c.isalnum())
             self.unique_id = f"MLKH{clean_national_id}{self.employment_date.year}"
+
+        # Create or update associated User account
+        if not self.user:
+            try:
+                user = User.objects.create_user(
+                    username=self.unique_id,
+                    email=self.email,
+                    password=self.national_id,
+                    first_name=self.first_name,
+                    last_name=self.last_name
+                )
+                self.user = user
+            except Exception as e:
+                raise ValueError(f"Failed to create user account: {str(e)}")
+
+        # Manage Admin group membership
+        admin_group, _ = Group.objects.get_or_create(name='Admin')
+        if self.is_admin:
+            if not self.user.groups.filter(name='Admin').exists():
+                self.user.groups.add(admin_group)
+        else:
+            if self.user.groups.filter(name='Admin').exists():
+                self.user.groups.remove(admin_group)
+
         super().save(*args, **kwargs)
 
     @property
@@ -87,13 +114,11 @@ class Staff(models.Model):
 
     @property
     def years_of_service(self):
-        """Calculate exact years of service from employment_date to current date."""
         current_date = timezone.now().date()
         years = current_date.year - self.employment_date.year
-        # Adjust if the anniversary hasn't occurred this year
         if (current_date.month, current_date.day) < (self.employment_date.month, self.employment_date.day):
             years -= 1
-        return max(0, years)  # Ensure non-negative years
+        return max(0, years)
 
     def __str__(self):
         return f"{self.full_name} ({self.unique_id})"
