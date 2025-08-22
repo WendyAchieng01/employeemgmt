@@ -89,16 +89,32 @@ class Staff(models.Model):
         # Create or update associated User account
         if not self.user:
             try:
-                user = User.objects.create_user(
-                    username=self.unique_id,
-                    email=self.email,
-                    password=self.national_id,
-                    first_name=self.first_name,
-                    last_name=self.last_name
-                )
-                self.user = user
+                if User.objects.filter(username=self.unique_id).exists():
+                    # If username already exists, assign the user instead of creating a new one
+                    self.user = User.objects.get(username=self.unique_id)
+                else:
+                    user = User.objects.create_user(
+                        username=self.unique_id,
+                        email=self.email,
+                        password=self.national_id,
+                        first_name=self.first_name,
+                        last_name=self.last_name
+                    )
+                    self.user = user
             except Exception as e:
-                raise ValueError(f"Failed to create user account: {str(e)}")
+                raise ValueError(f"Failed to create or assign user account: {str(e)}")
+        else:
+            # Update existing user info
+            user = self.user
+            user.first_name = self.first_name
+            user.last_name = self.last_name
+            user.email = self.email
+            user.username = self.unique_id  # Keep username in sync with unique_id
+            try:
+                user.full_clean()
+                user.save()
+            except Exception as e:
+                raise ValueError(f"Failed to update user account: {str(e)}")
 
         # Manage Admin group membership
         admin_group, _ = Group.objects.get_or_create(name='Admin')
