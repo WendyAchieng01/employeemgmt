@@ -25,7 +25,7 @@ class StaffForm(forms.ModelForm):
         required_fields = [
             'first_name', 'last_name', 'email', 'phone', 'gender',
             'date_of_birth', 'national_id', 'department', 'position',
-            'employment_date'
+            'employment_date', 'employment_category'
         ]
         
         for field in required_fields:
