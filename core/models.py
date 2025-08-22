@@ -35,6 +35,10 @@ class Staff(models.Model):
         ('TERMINATED', 'Terminated'),
         ('RETIRED', 'Retired'),
     ]
+    EMPLOYMENT_CATEGORY_CHOICES = [
+        ('LOCUM', 'Locum'),
+        ('CASUAL', 'Casual'),
+    ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("User Account"))
     first_name = models.CharField(max_length=50, verbose_name=_("First Name"))
@@ -55,6 +59,7 @@ class Staff(models.Model):
         default='ACTIVE',
         verbose_name=_("Employment Status")
     )
+    employment_category = models.CharField(max_length=20, choices=EMPLOYMENT_CATEGORY_CHOICES)
     salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name=_("Salary"))
     emergency_contact_name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Emergency Contact Name"))
     emergency_contact_phone = models.CharField(max_length=15, blank=True, null=True, verbose_name=_("Emergency Contact Phone"))
