@@ -167,7 +167,7 @@
             </div>
             <hr class="dark horizontal my-0">
             <div class="card-footer p-2 ps-3">
-              <p class="mb-0 text-sm"><span class="text-success font-weight-bolder">+3% </span>than last month</p>
+              <p class="mb-0 text-sm"><span class="text-success font-weight-bolder">{% widthratio present.count staff_list.count 100 %}% </span>of total staff</p>
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@
             </div>
             <hr class="dark horizontal my-0">
             <div class="card-footer p-2 ps-3">
-              <p class="mb-0 text-sm"><span class="text-danger font-weight-bolder">-2% </span>than yesterday</p>
+              <p class="mb-0 text-sm"><span class="text-danger font-weight-bolder">{% widthratio leave.count staff_list.count 100 %}% </span>of total staff</p>
             </div>
           </div>
         </div>
