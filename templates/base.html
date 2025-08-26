@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,6 +51,7 @@
         {% endblock %}
     </main>
 
+    <script src="{% static 'js/inactivity_logout.js' %}"></script>
     <script>
         // Basic JavaScript functions for interactivity
         function confirmDelete(staffId, staffName) {
