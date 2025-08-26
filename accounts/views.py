@@ -28,7 +28,7 @@ def signin(request):
                     return redirect('accounts:change_password')
                 
                 messages.success(request, 'Successfully logged in!')
-                return redirect('core:staff_list')  # Redirect to staff_list instead of 'home'
+                return redirect('core:staff_list')  
             except Staff.DoesNotExist:
                 messages.error(request, 'Staff profile not found')
         else:
