@@ -1,0 +1,70 @@
+<!-- templates/core/contract_renew.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            Renew Contract for {{ object.staff.full_name }}
+        </h2>
+        
+        <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+            <h3 class="font-semibold text-blue-800">Current Contract Details</h3>
+            <p class="text-sm text-blue-700">
+                Type: {{ object.get_contract_type_display }} | 
+                Current End Date: {{ object.end_date|default:"Permanent" }} | 
+                Salary: KSh {{ object.salary }}
+            </p>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">New Start Date</label>
+                    {{ form.start_date }}
+                    {{ form.start_date.errors }}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">New End Date</label>
+                    {{ form.end_date }}
+                    {{ form.end_date.errors }}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Salary</label>
+                    {{ form.salary }}
+                    {{ form.salary.errors }}
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Benefits</label>
+                    {{ form.benefits }}
+                    {{ form.benefits.errors }}
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    {{ form.notes }}
+                    {{ form.notes.errors }}
+                    <p class="text-xs text-gray-500 mt-1">Add any notes about this renewal</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 pt-6">
+                <a href="{% url 'core:staff_detail' object.staff.unique_id %}" 
+                   class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                    Renew Contract
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

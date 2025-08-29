@@ -1,9 +1,11 @@
 from django.db import models
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MinValueValidator
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
+from datetime import timedelta
+import uuid
 
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name=_("Department Name"))
@@ -147,3 +149,148 @@ class Staff(models.Model):
     class Meta:
         ordering = ['unique_id']
         verbose_name_plural = "Staff"
+
+    @property
+    def current_contract(self):
+        """Get the most recent active contract"""
+        return self.contracts.filter(status='ACTIVE').order_by('-start_date').first()
+    
+    @property
+    def contract_history(self):
+        """Get all contracts ordered by start date"""
+        return self.contracts.all().order_by('-start_date')
+    
+    def get_expiring_contracts(self):
+        """Get contracts expiring within 30 days"""
+        return self.contracts.filter(
+            status='ACTIVE',
+            end_date__gte=timezone.now().date(),
+            end_date__lte=timezone.now().date() + timedelta(days=30)
+        )
+
+
+
+class Contract(models.Model):
+    CONTRACT_TYPES = (
+        ('PERMANENT', 'Permanent'),
+        ('FIXED', 'Fixed Term'),
+        ('PROBATION', 'Probation'),
+        ('INTERN', 'Internship'),
+        ('LOCUM', 'Locum'),
+        ('CASUAL', 'Casual'),
+    )
+    
+    CONTRACT_STATUS = (
+        ('ACTIVE', 'Active'),
+        ('EXPIRED', 'Expired'),
+        ('TERMINATED', 'Terminated'),
+        ('RENEWED', 'Renewed'),
+        ('PENDING', 'Pending Renewal'),
+    )
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='contracts')
+    contract_type = models.CharField(max_length=20, choices=CONTRACT_TYPES, default='FIXED')
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+    salary = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
+    benefits = models.TextField(blank=True, null=True)
+    job_title = models.CharField(max_length=200)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
+    status = models.CharField(max_length=20, choices=CONTRACT_STATUS, default='ACTIVE')
+    document = models.FileField(upload_to='contracts/%Y/%m/%d/', blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    
+    # Auto fields
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    renewal_reminder_sent = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-start_date']
+        verbose_name = _('Contract')
+        verbose_name_plural = _('Contracts')
+    
+    def __str__(self):
+        return f"{self.staff.full_name} - {self.job_title} ({self.start_date})"
+    
+    @property
+    def is_expired(self):
+        if self.end_date and timezone.now().date() > self.end_date:
+            return True
+        return False
+    
+    @property
+    def is_expiring_soon(self):
+        if self.end_date:
+            warning_period = timedelta(days=30)
+            today = timezone.now().date()
+            return today <= self.end_date <= today + warning_period
+        return False
+    
+    @property
+    def days_until_expiry(self):
+        if self.end_date:
+            today = timezone.now().date()
+            if today > self.end_date:
+                return (today - self.end_date).days * -1  # Negative for expired
+            return (self.end_date - today).days
+        return None
+    
+    @property
+    def duration(self):
+        if self.end_date:
+            return (self.end_date - self.start_date).days
+        return (timezone.now().date() - self.start_date).days
+    
+    def save(self, *args, **kwargs):
+        # Update status based on expiration
+        if self.end_date and timezone.now().date() > self.end_date:
+            self.status = 'EXPIRED'
+        elif self.status == 'EXPIRED' and self.end_date and timezone.now().date() <= self.end_date:
+            self.status = 'ACTIVE'
+        
+        # For permanent contracts, set end_date to None
+        if self.contract_type == 'PERMANENT':
+            self.end_date = None
+            
+        super().save(*args, **kwargs)
+    
+    def renew_contract(self, new_end_date, new_salary=None, new_benefits=None, new_job_title=None):
+        """Create a new contract based on the current one"""
+        new_contract = Contract(
+            staff=self.staff,
+            contract_type=self.contract_type,
+            start_date=timezone.now().date(),
+            end_date=new_end_date,
+            salary=new_salary or self.salary,
+            benefits=new_benefits or self.benefits,
+            job_title=new_job_title or self.job_title,
+            department=self.department or self.staff.department,
+            status='ACTIVE'
+        )
+        new_contract.save()
+        
+        # Mark old contract as renewed
+        self.status = 'RENEWED'
+        self.save()
+        
+        return new_contract
+
+
+class ContractRenewal(models.Model):
+    """Track contract renewal history"""
+    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='renewals')
+    renewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    renewal_date = models.DateTimeField(auto_now_add=True)
+    previous_end_date = models.DateField()
+    new_end_date = models.DateField()
+    notes = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-renewal_date']
+        verbose_name = _('Contract Renewal')
+        verbose_name_plural = _('Contract Renewals')
+    
+    def __str__(self):
+        return f"Renewal of {self.contract} on {self.renewal_date.date()}"

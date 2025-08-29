@@ -2,14 +2,17 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.db.models import Q, Count
 from django.http import JsonResponse
-from .models import Staff, Department
-from .forms import StaffForm
+from .models import Staff, Department, Contract, ContractRenewal
+from .forms import StaffForm, ContractForm
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
+from django.views.generic import CreateView, UpdateView, DetailView, DeleteView
+from django.urls import reverse_lazy
+from django.utils import timezone
 
 def is_admin(user):
     return user.groups.filter(name='Admin').exists()
@@ -157,10 +160,10 @@ def staff_create(request):
         'title': 'Add New Staff Member'
     })
 
-@login_required
+
 def staff_detail(request, unique_id):
     staff = get_object_or_404(Staff, unique_id=unique_id)
-    return render(request, 'staff_detail.html', {'staff': staff})
+    return render(request, 'staffdash.html', {'staff': staff})
 
 @login_required
 @user_passes_test(is_admin)
@@ -221,3 +224,78 @@ def delete_staff(request, staff_id):
         return HttpResponse(status=200)
     except Exception as e:
         return HttpResponse(status=500)
+    
+
+class ContractCreateView(CreateView):
+    model = Contract
+    form_class = ContractForm
+    template_name = 'contract_form.html'
+    
+    def get_initial(self):
+        initial = super().get_initial()
+        unique_id = self.kwargs.get('unique_id')
+        staff = get_object_or_404(Staff, unique_id=unique_id)
+        print(staff.unique_id)
+        initial['staff'] = staff
+        initial['department'] = staff.department
+        initial['job_title'] = staff.position
+        return initial
+    
+    def form_valid(self, form):
+        form.instance.staff = get_object_or_404(Staff, id=self.kwargs['unique_id'])
+        response = super().form_valid(form)
+        messages.success(self.request, f'Contract created successfully for {form.instance.staff.full_name}')
+        return response
+    
+    def get_success_url(self):
+        return reverse_lazy('core:staff_detail', kwargs={'unique_id': self.object.staff.unique_id})
+
+class ContractRenewView(UpdateView):
+    model = Contract
+    form_class = ContractForm
+    template_name = 'contract_renew.html'
+    
+    def get_initial(self):
+        initial = super().get_initial()
+        # Set the start date to today for renewal
+        initial['start_date'] = timezone.now().date()
+        return initial
+    
+    def form_valid(self, form):
+        # Create a renewal record
+        ContractRenewal.objects.create(
+            contract=self.object,
+            renewed_by=self.request.user,
+            previous_end_date=self.object.end_date,
+            new_end_date=form.cleaned_data['end_date'],
+            notes=f"Renewed by {self.request.user.get_full_name() or self.request.user.username}"
+        )
+        
+        response = super().form_valid(form)
+        messages.success(self.request, f'Contract renewed successfully for {form.instance.staff.full_name}')
+        return response
+    
+    def get_success_url(self):
+        return reverse_lazy('core:staff_detail', kwargs={'unique_id': self.object.staff.unique_id})
+
+class ContractDetailView(DetailView):
+    model = Contract
+    template_name = 'core/contract_detail.html'
+    context_object_name = 'contract'
+
+class ContractUpdateView(UpdateView):
+    model = Contract
+    form_class = ContractForm
+    template_name = 'core/contract_form.html'
+    
+    def get_success_url(self):
+        return reverse_lazy('core:staff_detail', kwargs={'unique_id': self.object.staff.unique_id})
+
+class ContractDeleteView(DeleteView):
+    model = Contract
+    template_name = 'core/contract_confirm_delete.html'
+    
+    def get_success_url(self):
+        staff_unique_id = self.object.staff.unique_id
+        messages.success(self.request, 'Contract deleted successfully')
+        return reverse_lazy('core:staff_detail', kwargs={'unique_id': staff_unique_id})

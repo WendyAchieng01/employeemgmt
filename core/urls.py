@@ -12,5 +12,10 @@ urlpatterns = [
     path('<str:unique_id>/update/', views.staff_update, name='staff_update'),
     path('department/<int:dept_id>/', views.department_staff, name='department_staff'),
     path('api/staff/', views.staff_api, name='staff_api'),
-    path('staff/<str:staff_id>/delete/', views.delete_staff, name='delete_staff'),
+    path('staff/<str:unique_id>/delete/', views.delete_staff, name='delete_staff'),
+    path('staff/<str:unique_id>/contract/create/', views.ContractCreateView.as_view(), name='contract_create'),
+    path('contract/<uuid:pk>/renew/', views.ContractRenewView.as_view(), name='contract_renew'),
+    path('contract/<uuid:pk>/', views.ContractDetailView.as_view(), name='contract_detail'),
+    path('contract/<uuid:pk>/update/', views.ContractUpdateView.as_view(), name='contract_update'),
+    path('contract/<uuid:pk>/delete/', views.ContractDeleteView.as_view(), name='contract_delete'),
 ]

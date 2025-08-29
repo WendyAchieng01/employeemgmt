@@ -1,6 +1,6 @@
 from django import forms
 from django.utils import timezone
-from .models import Staff, Department
+from .models import Staff, Department, Contract
 
 class StaffForm(forms.ModelForm):
     class Meta:
@@ -72,5 +72,33 @@ class StaffForm(forms.ModelForm):
                     f"A staff member with this National ID already exists in {department.name} "
                     f"for the year {employment_date.year}. Staff ID would be: {potential_unique_id}"
                 )
+        
+        return cleaned_data
+    
+class ContractForm(forms.ModelForm):
+    class Meta:
+        model = Contract
+        fields = [
+            'contract_type', 'start_date', 'end_date', 'salary', 
+            'benefits', 'job_title', 'department', 'document', 'notes'
+        ]
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+            'benefits': forms.Textarea(attrs={'rows': 3}),
+            'notes': forms.Textarea(attrs={'rows': 3}),
+        }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        contract_type = cleaned_data.get('contract_type')
+        
+        if contract_type != 'PERMANENT' and not end_date:
+            raise forms.ValidationError("End date is required for non-permanent contracts.")
+        
+        if end_date and start_date and end_date <= start_date:
+            raise forms.ValidationError("End date must be after start date.")
         
         return cleaned_data

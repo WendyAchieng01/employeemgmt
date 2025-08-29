@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Department, Staff
+from .models import Department, Staff, Contract, ContractRenewal
 
 
 @admin.register(Department)
@@ -57,3 +57,65 @@ class StaffAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(Contract)
+class ContractAdmin(admin.ModelAdmin):
+    list_display = ['staff', 'job_title', 'contract_type', 'start_date', 'end_date', 'status', 'is_expiring_soon']
+    list_filter = ['status', 'contract_type', 'department', 'start_date']
+    search_fields = ['staff__full_name', 'job_title', 'department__name']
+    readonly_fields = ['created_at', 'updated_at', 'days_until_expiry', 'is_expired']
+    actions = ['send_renewal_reminders', 'mark_as_renewed']
+    
+    fieldsets = (
+        (None, {
+            'fields': ('staff', 'contract_type', 'start_date', 'end_date')
+        }),
+        ('Employment Details', {
+            'fields': ('job_title', 'department', 'salary', 'benefits')
+        }),
+        ('Status', {
+            'fields': ('status', 'document', 'notes')
+        }),
+        ('System Information', {
+            'fields': ('created_at', 'updated_at', 'renewal_reminder_sent'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def is_expiring_soon(self, obj):
+        return obj.is_expiring_soon
+    is_expiring_soon.boolean = True
+    is_expiring_soon.short_description = 'Expiring Soon'
+    
+    def send_renewal_reminders(self, request, queryset):
+        from django.contrib import messages
+        from .tasks import send_contract_renewal_reminder
+        
+        count = 0
+        for contract in queryset.filter(status='ACTIVE', end_date__isnull=False):
+            if contract.is_expiring_soon and not contract.renewal_reminder_sent:
+                send_contract_renewal_reminder(contract.id)
+                contract.renewal_reminder_sent = True
+                contract.save()
+                count += 1
+                
+        self.message_user(request, f"Renewal reminders sent for {count} contracts")
+    send_renewal_reminders.short_description = "Send renewal reminders"
+    
+    def mark_as_renewed(self, request, queryset):
+        updated = queryset.update(status='RENEWED')
+        self.message_user(request, f"{updated} contracts marked as renewed")
+    mark_as_renewed.short_description = "Mark selected as renewed"
+
+
+@admin.register(ContractRenewal)
+class ContractRenewalAdmin(admin.ModelAdmin):
+    list_display = ['contract', 'renewal_date', 'renewed_by']
+    list_filter = ['renewal_date']
+    readonly_fields = ['renewal_date']
+    
+    def save_model(self, request, obj, form, change):
+        if not obj.renewed_by:
+            obj.renewed_by = request.user
+        super().save_model(request, obj, form, change)
