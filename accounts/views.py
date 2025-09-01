@@ -32,7 +32,7 @@ def signin(request):
                     return redirect('accounts:change_password')
                 
                 messages.success(request, 'Successfully logged in!')
-                return redirect('core:staff_list')  
+                return redirect('core:casuals')  
             except Staff.DoesNotExist:
                 messages.error(request, 'Staff profile not found')
         else:

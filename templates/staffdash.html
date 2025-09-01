@@ -236,7 +236,7 @@
                     <span class="staff-id">{{ staff.unique_id }}</span>
                     <div class="status-badge status-active">
                         <span class="material-symbols-rounded">check_circle</span>
-                        Active
+                        {{ staff.get_employment_status_display }}
                     </div>
                 </div>
             </div>

@@ -231,21 +231,30 @@ class ContractCreateView(CreateView):
     form_class = ContractForm
     template_name = 'contract_form.html'
     
-    def get_initial(self):
-        initial = super().get_initial()
+    def get_staff_object(self):
+        """Get staff by unique_id"""
         unique_id = self.kwargs.get('unique_id')
         staff = get_object_or_404(Staff, unique_id=unique_id)
-        print(staff.unique_id)
+        return staff
+    
+    def get_initial(self):
+        initial = super().get_initial()
+        staff = self.get_staff_object()
         initial['staff'] = staff
         initial['department'] = staff.department
         initial['job_title'] = staff.position
         return initial
     
     def form_valid(self, form):
-        form.instance.staff = get_object_or_404(Staff, id=self.kwargs['unique_id'])
+        form.instance.staff = self.get_staff_object()
         response = super().form_valid(form)
         messages.success(self.request, f'Contract created successfully for {form.instance.staff.full_name}')
         return response
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['staff'] = self.get_staff_object()
+        return context
     
     def get_success_url(self):
         return reverse_lazy('core:staff_detail', kwargs={'unique_id': self.object.staff.unique_id})
