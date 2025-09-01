@@ -12,7 +12,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 from django.views.generic import CreateView, UpdateView, DetailView, DeleteView
 from django.urls import reverse_lazy
+import logging
 from django.utils import timezone
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 def is_admin(user):
     return user.groups.filter(name='Admin').exists()
@@ -258,51 +260,94 @@ class ContractCreateView(CreateView):
     
     def get_success_url(self):
         return reverse_lazy('core:staff_detail', kwargs={'unique_id': self.object.staff.unique_id})
+    
 
-class ContractRenewView(UpdateView):
+logger = logging.getLogger(__name__)
+class ContractRenewView(LoginRequiredMixin, UpdateView):
     model = Contract
     form_class = ContractForm
     template_name = 'contract_renew.html'
-    
+
     def get_initial(self):
         initial = super().get_initial()
-        # Set the start date to today for renewal
-        initial['start_date'] = timezone.now().date()
+        initial.update({
+            'start_date': timezone.now().date(),
+            'contract_type': self.object.contract_type,
+            'job_title': self.object.job_title,
+            'department': self.object.department,
+            'salary': self.object.salary,
+            'benefits': self.object.benefits,
+        })
         return initial
-    
+
     def form_valid(self, form):
-        # Create a renewal record
-        ContractRenewal.objects.create(
-            contract=self.object,
-            renewed_by=self.request.user,
-            previous_end_date=self.object.end_date,
-            new_end_date=form.cleaned_data['end_date'],
-            notes=f"Renewed by {self.request.user.get_full_name() or self.request.user.username}"
-        )
-        
-        response = super().form_valid(form)
-        messages.success(self.request, f'Contract renewed successfully for {form.instance.staff.full_name}')
-        return response
-    
+        try:
+            # Get the original contract
+            old_contract = self.object
+            # Create a new contract using renew_contract
+            new_contract = old_contract.renew_contract(
+                new_end_date=form.cleaned_data['end_date'],
+                new_salary=form.cleaned_data.get('salary', old_contract.salary),
+                new_benefits=form.cleaned_data.get('benefits', old_contract.benefits),
+                new_job_title=form.cleaned_data.get('job_title', old_contract.job_title)
+            )
+
+            # Create a renewal record
+            ContractRenewal.objects.create(
+                contract=old_contract,
+                renewed_by=self.request.user,
+                previous_end_date=old_contract.end_date,
+                new_end_date=new_contract.end_date,
+                notes=form.cleaned_data.get('notes', f"Renewed by {self.request.user.get_full_name() or self.request.user.username}")
+            )
+
+            # Add success message
+            staff_name = getattr(old_contract.staff, 'full_name', 'Unknown')
+            messages.success(self.request, f'Contract renewed successfully for {staff_name}')
+
+            # Update self.object to the new contract for get_success_url
+            self.object = new_contract
+            return super().form_valid(form)
+        except Exception as e:
+            logger.error(f"Error renewing contract: {str(e)}", exc_info=True)
+            messages.error(self.request, f'Failed to renew contract: {str(e)}')
+            return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        logger.error(f"Form validation failed: {form.errors}")
+        return super().form_invalid(form)
+
     def get_success_url(self):
-        return reverse_lazy('core:staff_detail', kwargs={'unique_id': self.object.staff.unique_id})
+        try:
+            if hasattr(self.object, 'staff') and hasattr(self.object.staff, 'unique_id'):
+                return reverse_lazy('core:staff_detail', kwargs={'unique_id': self.object.staff.unique_id})
+            else:
+                messages.warning(self.request, 'Staff details not found. Redirecting to contract list.')
+                return reverse_lazy('core:contract_list')
+        except Exception as e:
+            logger.error(f"Error in get_success_url: {str(e)}", exc_info=True)
+            messages.error(self.request, f'Error redirecting: {str(e)}')
+            return reverse_lazy('core:contract_list')
+
+    def get_queryset(self):
+        return Contract.objects.filter(status='ACTIVE')
 
 class ContractDetailView(DetailView):
     model = Contract
-    template_name = 'core/contract_detail.html'
+    template_name = 'contract_detail.html'
     context_object_name = 'contract'
 
 class ContractUpdateView(UpdateView):
     model = Contract
     form_class = ContractForm
-    template_name = 'core/contract_form.html'
+    template_name = 'contract_form.html'
     
     def get_success_url(self):
         return reverse_lazy('core:staff_detail', kwargs={'unique_id': self.object.staff.unique_id})
 
 class ContractDeleteView(DeleteView):
     model = Contract
-    template_name = 'core/contract_confirm_delete.html'
+    template_name = 'contract_confirm_delete.html'
     
     def get_success_url(self):
         staff_unique_id = self.object.staff.unique_id

@@ -11,7 +11,7 @@ class StaffForm(forms.ModelForm):
             'employment_date': forms.DateInput(attrs={'type': 'date'}),
             'address': forms.Textarea(attrs={'rows': 3}),
             'gender': forms.Select(),
-            'employment_status': forms.Select(),
+            'employment_status': forms.Select(attrs={'required': 'false'}),
             'kra_pin': forms.TextInput(attrs={'placeholder': ''}),
         }
 

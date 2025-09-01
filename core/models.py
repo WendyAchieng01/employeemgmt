@@ -31,16 +31,18 @@ class Staff(models.Model):
         ('F', 'Female'),
         ('O', 'Other'),
     ]
-    EMPLOYMENT_STATUS_CHOICES = [
-        ('ACTIVE', 'Active'),
-        ('INACTIVE', 'Inactive'),
-        ('TERMINATED', 'Terminated'),
-        ('RETIRED', 'Retired'),
-    ]
     EMPLOYMENT_CATEGORY_CHOICES = [
         ('LOCUM', 'Locum'),
         ('CASUAL', 'Casual'),
     ]
+    EMPLOYMENT_STATUS_CHOICES = (
+        ('ACTIVE', 'Active'),
+        ('EXPIRED', 'Expired'),
+        ('TERMINATED', 'Terminated'),
+        ('RENEWED', 'Renewed'),
+        ('PENDING', 'Pending Renewal'),
+        ('AWAITING CONTRACT', 'Awaiting contract')
+    )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("User Account"))
     first_name = models.CharField(max_length=50, verbose_name=_("First Name"))
@@ -55,17 +57,18 @@ class Staff(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='staff_members', verbose_name=_("Department"))
     position = models.CharField(max_length=100, verbose_name=_("Position"))
     employment_date = models.DateField(verbose_name=_("Employment Date"))
-    employment_status = models.CharField(
-        max_length=20,
-        choices=EMPLOYMENT_STATUS_CHOICES,
-        default='ACTIVE',
-        verbose_name=_("Employment Status")
-    )
     employment_category = models.CharField(max_length=20, choices=EMPLOYMENT_CATEGORY_CHOICES)
     salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name=_("Salary"))
     emergency_contact_name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Emergency Contact Name"))
     emergency_contact_phone = models.CharField(max_length=15, blank=True, null=True, verbose_name=_("Emergency Contact Phone"))
     emergency_contact_relationship = models.CharField(max_length=50, blank=True, null=True, verbose_name=_("Emergency Contact Relationship"))
+    employment_status = models.CharField(
+        max_length=20,
+        choices=EMPLOYMENT_STATUS_CHOICES,
+        verbose_name=_("Employment Status"),
+        null=True,
+        blank=True
+    )
     kra_pin = models.CharField(
         max_length=11,
         unique=True,
@@ -201,6 +204,7 @@ class Contract(models.Model):
     document = models.FileField(upload_to='contracts/%Y/%m/%d/', blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     
+    
     # Auto fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -255,6 +259,12 @@ class Contract(models.Model):
             self.end_date = None
             
         super().save(*args, **kwargs)
+
+        # Update Staff.employment_status if this is the current contract
+        current_contract = self.staff.current_contract
+        if current_contract and self.id == current_contract.id:
+            self.staff.employment_status = self.status
+            self.staff.save()
     
     def renew_contract(self, new_end_date, new_salary=None, new_benefits=None, new_job_title=None):
         """Create a new contract based on the current one"""
