@@ -36,12 +36,13 @@ class Staff(models.Model):
         ('CASUAL', 'Casual'),
     ]
     EMPLOYMENT_STATUS_CHOICES = (
+        ('AWAITING CONTRACT', 'Awaiting Contract'),
         ('ACTIVE', 'Active'),
         ('EXPIRED', 'Expired'),
         ('TERMINATED', 'Terminated'),
         ('RENEWED', 'Renewed'),
         ('PENDING', 'Pending Renewal'),
-        ('AWAITING CONTRACT', 'Awaiting contract')
+        ('INACTIVE', 'Inactive'),
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("User Account"))
@@ -66,8 +67,7 @@ class Staff(models.Model):
         max_length=20,
         choices=EMPLOYMENT_STATUS_CHOICES,
         verbose_name=_("Employment Status"),
-        null=True,
-        blank=True
+        default='AWAITING CONTRACT'
     )
     kra_pin = models.CharField(
         max_length=11,
@@ -260,11 +260,6 @@ class Contract(models.Model):
             
         super().save(*args, **kwargs)
 
-        # Update Staff.employment_status if this is the current contract
-        current_contract = self.staff.current_contract
-        if current_contract and self.id == current_contract.id:
-            self.staff.employment_status = self.status
-            self.staff.save()
     
     def renew_contract(self, new_end_date, new_salary=None, new_benefits=None, new_job_title=None):
         """Create a new contract based on the current one"""

@@ -11,7 +11,7 @@ class StaffForm(forms.ModelForm):
             'employment_date': forms.DateInput(attrs={'type': 'date'}),
             'address': forms.Textarea(attrs={'rows': 3}),
             'gender': forms.Select(),
-            'employment_status': forms.Select(attrs={'required': 'false'}),
+            'employment_status': forms.Select(),
             'kra_pin': forms.TextInput(attrs={'placeholder': ''}),
         }
 
@@ -20,6 +20,7 @@ class StaffForm(forms.ModelForm):
         self.fields['department'].queryset = Department.objects.all()
         # Set initial employment_date to current date
         self.fields['employment_date'].initial = timezone.now().date()
+        self.fields['employment_status'].required = False
         
         # Make certain fields required
         required_fields = [
@@ -79,7 +80,7 @@ class ContractForm(forms.ModelForm):
     class Meta:
         model = Contract
         fields = [
-            'contract_type', 'start_date', 'end_date', 'salary', 
+            'contract_type', 'start_date', 'end_date', 'salary',
             'benefits', 'job_title', 'department', 'document', 'notes'
         ]
         widgets = {

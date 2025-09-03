@@ -154,6 +154,7 @@ def staff_create(request):
             return redirect('core:staff_detail', unique_id=staff.unique_id)
         else:
             messages.error(request, 'Please correct the errors below.')
+            print(form.errors)
     else:
         form = StaffForm()
     

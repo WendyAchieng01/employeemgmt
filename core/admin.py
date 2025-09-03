@@ -16,7 +16,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 @admin.register(Staff)
 class StaffAdmin(admin.ModelAdmin):
     list_display = [
-        'unique_id', 'full_name', 'department', 'position', 
+        'unique_id', 'full_name', 'department', 'position', 'employment_status',
         'employment_date', 'is_admin'
     ]
     list_filter = [
