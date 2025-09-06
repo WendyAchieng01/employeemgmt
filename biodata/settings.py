@@ -138,5 +138,5 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 CRONJOBS = [
-    ('0 0 * * *', 'django.core.management.call_command', ['check_contract_expiry']),
+    ('0 * * * *', 'django.core.management.call_command', ['check_contract_expiry']),
 ]
