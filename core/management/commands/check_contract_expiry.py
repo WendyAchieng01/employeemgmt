@@ -20,10 +20,10 @@ class Command(BaseCommand):
             renewal_reminder_sent=False
         )
         
-        for contract in expiring_contracts:
-            self.send_renewal_reminder(contract)
-            contract.renewal_reminder_sent = True
-            contract.save()
+        #for contract in expiring_contracts:
+          #  self.send_renewal_reminder(contract)
+          #  contract.renewal_reminder_sent = True
+           # contract.save()
             
         # Mark expired contracts
         expired_contracts = Contract.objects.filter(
@@ -33,6 +33,10 @@ class Command(BaseCommand):
         
         for contract in expired_contracts:
             contract.status = 'EXPIRED'
+            if contract.contract_type == "CASUAL":
+                contract.staff.employment_status = "INACTIVE"
+            else:
+                contract.staff.employment_status = "EXPIRED"
             contract.save()
             
         self.stdout.write(
