@@ -27,6 +27,7 @@ def lcdash(request):
 
     # Base queryset
     staff = Staff.objects.filter(employment_category='LOCUM')
+    total = staff
     present = staff.filter(employment_status='ACTIVE')
     on_leave = staff.filter(employment_status='INACTIVE')
 
@@ -54,6 +55,7 @@ def lcdash(request):
 
     context = {
         'staff_list': staff,
+        'total': total,
         'departments': departments,
         'search_query': search_query,
         'current_dept': department_id,
@@ -71,6 +73,7 @@ def cdash(request):
 
     # Base queryset
     staff = Staff.objects.filter(employment_category='CASUAL')
+    total = staff
     present = staff.filter(employment_status='ACTIVE')
     on_leave = staff.filter(employment_status='INACTIVE')
 
@@ -98,6 +101,7 @@ def cdash(request):
 
     context = {
         'staff_list': staff,
+        'total': total,
         'departments': departments,
         'search_query': search_query,
         'current_dept': department_id,

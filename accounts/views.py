@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -9,11 +10,28 @@ import re
 def is_admin(user):
     return user.groups.filter(name='Admin').exists()
 
+def is_safe_url(url, host=None):
+    """
+    Return True if the url is a safe redirect destination.
+    """
+    return url_has_allowed_host_and_scheme(url, allowed_hosts={host}, require_https=request.is_secure())
+
 def signin(request):
+    # Get the 'next' parameter from the request (either GET or POST)
+    next_url = request.POST.get('next') or request.GET.get('next', '')
+    
     if request.method == 'POST':
         staff_id = request.POST.get('staff_id').lower()  
         password = request.POST.get('password')
         remember_me = request.POST.get('remember_me')
+        
+        # If remember_me is checked, extend session expiry (optional)
+        if remember_me:
+            # Set longer session expiry (e.g., 2 weeks)
+            request.session.set_expiry(1209600)  # 2 weeks in seconds
+        else:
+            # Set session expiry to 20 minutes (1200 seconds) for inactivity logout
+            request.session.set_expiry(1200)
 
         try:
             user = User.objects.get(username__iexact=staff_id)
@@ -25,20 +43,28 @@ def signin(request):
             try:
                 staff = Staff.objects.get(user=user)
                 login(request, user)
-                # Set session expiry to 20 minutes (1200 seconds) for inactivity logout
-                request.session.set_expiry(1200)
                 
                 if user.check_password(staff.national_id):
-                    return redirect('accounts:change_password')
+                    # If password change is needed, preserve the next URL
+                    change_password_url = reverse('accounts:change_password')
+                    if next_url:
+                        change_password_url += f'?next={next_url}'
+                    return redirect(change_password_url)
                 
                 messages.success(request, 'Successfully logged in!')
-                return redirect('core:casuals')  
+                
+                # Redirect to the next URL if provided and valid, otherwise default
+                if next_url and is_safe_url(next_url, request.get_host()):
+                    return redirect(next_url)
+                else:
+                    return redirect('core:casuals')  
             except Staff.DoesNotExist:
                 messages.error(request, 'Staff profile not found')
         else:
             messages.error(request, 'Invalid Staff ID or password')
 
-    return render(request, 'sign-in.html')
+    # For GET requests or failed login, pass next_url to template
+    return render(request, 'sign-in.html', {'next_url': next_url})
 
 def signup(request):
     if request.method == 'POST':

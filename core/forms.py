@@ -25,7 +25,7 @@ class StaffForm(forms.ModelForm):
         # Make certain fields required
         required_fields = [
             'first_name', 'last_name', 'email', 'phone', 'gender',
-            'date_of_birth', 'national_id', 'department', 'position',
+            'date_of_birth', 'national_id', 'department', 'designation',
             'employment_date', 'employment_category'
         ]
         

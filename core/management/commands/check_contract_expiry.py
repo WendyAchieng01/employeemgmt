@@ -27,14 +27,15 @@ class Command(BaseCommand):
             
         # Mark expired contracts
         expired_contracts = Contract.objects.filter(
-            end_date__lt=timezone.now().date(),
-            status='ACTIVE'
+            end_date__lt=timezone.now().date()
         )
         
         for contract in expired_contracts:
             contract.status = 'EXPIRED'
             if contract.contract_type == "CASUAL":
                 contract.staff.employment_status = "INACTIVE"
+            elif contract.contract_type == "LOCUM":
+                contract.staff.employment_status = "EXPIRED"
             else:
                 contract.staff.employment_status = "EXPIRED"
             contract.save()

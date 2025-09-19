@@ -15,7 +15,7 @@ def sync_staff_employment_status(staff):
         casual_expired = staff.contracts.filter(
             contract_type='CASUAL', status='EXPIRED'
         ).exists()
-        staff.employment_status = 'INACTIVE' if casual_expired else 'INACTIVE'  # adjust if you have other states
+        staff.employment_status = 'INACTIVE' if casual_expired else 'EXPIRED'  # adjust if you have other states
     staff.save(update_fields=['employment_status'])
 
 

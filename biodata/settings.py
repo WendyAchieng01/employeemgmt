@@ -140,3 +140,14 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 CRONJOBS = [
     ('0 * * * *', 'django.core.management.call_command', ['check_contract_expiry']),
 ]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'accounts.middleware.RedirectToLoginMiddleware', 
+]

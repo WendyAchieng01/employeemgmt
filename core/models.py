@@ -56,7 +56,7 @@ class Staff(models.Model):
     national_id = models.CharField(max_length=20, unique=True, verbose_name=_("National ID"))
     address = models.TextField(verbose_name=_("Address"))
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='staff_members', verbose_name=_("Department"))
-    position = models.CharField(max_length=100, verbose_name=_("Position"))
+    designation = models.CharField(max_length=100, verbose_name=_("Position"))
     employment_date = models.DateField(verbose_name=_("Employment Date"))
     employment_category = models.CharField(max_length=20, choices=EMPLOYMENT_CATEGORY_CHOICES)
     salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name=_("Salary"))

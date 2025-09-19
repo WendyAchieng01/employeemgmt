@@ -16,7 +16,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 @admin.register(Staff)
 class StaffAdmin(admin.ModelAdmin):
     list_display = [
-        'unique_id', 'full_name', 'department', 'position', 'employment_status',
+        'unique_id', 'full_name', 'department', 'designation', 'employment_status',
         'employment_date', 'is_admin'
     ]
     list_filter = [
@@ -25,7 +25,7 @@ class StaffAdmin(admin.ModelAdmin):
     ]
     search_fields = [
         'unique_id', 'first_name', 'last_name', 'email', 
-        'national_id', 'position'
+        'national_id', 'designation'
     ]
     readonly_fields = ['unique_id', 'created_at', 'updated_at', 'years_of_service']
     
@@ -42,7 +42,7 @@ class StaffAdmin(admin.ModelAdmin):
         }),
         ('Employment Information', {
             'fields': (
-                'department', 'position', 'employment_date',
+                'department', 'designation', 'employment_date',
                 'salary', 'is_admin'
             )
         }),

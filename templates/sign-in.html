@@ -44,6 +44,7 @@
               <div class="card-body">
                 <form role="form" class="text-start" method="POST" action="{% url 'accounts:signin' %}">
                     {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next_url|default:'' }}">
                     {% if messages %}
                         <div class="alert alert-info">
                             {% for message in messages %}
@@ -115,6 +116,25 @@
   <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
   <script src="{% static 'js/plugins/perfect-scrollbar.min.js' %}"></script>
   <script src="{% static 'js/plugins/smooth-scrollbar.min.js' %}"></script>
+  <script>
+    function captureReturnUrl() {
+        const currentUrl = window.location.href;
+        sessionStorage.setItem('returnUrl', currentUrl);
+    }
+
+    // Example: Call this function when detecting session timeout
+    function checkSessionTimeout() {
+        // Your existing timeout logic
+        // When timeout is detected:
+        captureReturnUrl();
+    }
+
+    // Modify your logout function to preserve return URL
+    function handleLogout() {
+        captureReturnUrl();
+        window.location.href = "{% url 'accounts:signin' %}";
+    }
+  </script>
   <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
