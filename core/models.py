@@ -176,9 +176,6 @@ class Staff(models.Model):
 class Contract(models.Model):
     CONTRACT_TYPES = (
         ('PERMANENT', 'Permanent'),
-        ('FIXED', 'Fixed Term'),
-        ('PROBATION', 'Probation'),
-        ('INTERN', 'Internship'),
         ('LOCUM', 'Locum'),
         ('CASUAL', 'Casual'),
     )

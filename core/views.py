@@ -211,7 +211,7 @@ def staff_api(request):
                 'id': staff.unique_id,
                 'name': staff.full_name,
                 'department': staff.department.name,
-                'position': staff.position,
+                'designation': staff.designation,
                 'status': staff.employment_status,
                 'employment_date': staff.employment_date.strftime('%Y-%m-%d')
             })
@@ -249,7 +249,7 @@ class ContractCreateView(CreateView):
         staff = self.get_staff_object()
         initial['staff'] = staff
         initial['department'] = staff.department
-        initial['job_title'] = staff.position
+        initial['job_title'] = staff.designation
         return initial
     
     def form_valid(self, form):

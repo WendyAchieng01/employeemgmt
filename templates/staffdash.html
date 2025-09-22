@@ -218,7 +218,10 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Staff Profile</h1>
+            <button onclick="goToReferrer()" class="btn btn-primary">
+                <span class="material-symbols-rounded">arrow_back</span>
+                Back
+            </button>
             <button class="btn btn-primary">
                 <span class="material-symbols-rounded">download</span>
                 Export PDF
@@ -508,6 +511,16 @@
         document.querySelector('.btn-outline').addEventListener('click', function() {
             alert('Contract upload functionality would open a file dialog in a real application.');
         });
+    </script>
+    <script>
+        function goToReferrer() {
+            const referrer = document.referrer;
+            if (referrer) {
+                window.location.href = referrer;
+            } else {
+                window.history.back(); // Fallback
+            }
+        }
     </script>
 </body>
 </html>
