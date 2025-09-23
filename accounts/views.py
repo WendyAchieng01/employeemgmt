@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth import authenticate, login, logout
+from django.urls import reverse
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.exceptions import ValidationError
@@ -10,28 +11,27 @@ import re
 def is_admin(user):
     return user.groups.filter(name='Admin').exists()
 
-def is_safe_url(url, host=None):
+def is_safe_url(url, request):
     """
     Return True if the url is a safe redirect destination.
     """
-    return url_has_allowed_host_and_scheme(url, allowed_hosts={host}, require_https=request.is_secure())
+    allowed_hosts = {request.get_host()}
+    return url_has_allowed_host_and_scheme(url, allowed_hosts=allowed_hosts, require_https=request.is_secure())
 
 def signin(request):
     # Get the 'next' parameter from the request (either GET or POST)
     next_url = request.POST.get('next') or request.GET.get('next', '')
     
     if request.method == 'POST':
-        staff_id = request.POST.get('staff_id').lower()  
+        staff_id = request.POST.get('staff_id').lower()
         password = request.POST.get('password')
         remember_me = request.POST.get('remember_me')
-        
-        # If remember_me is checked, extend session expiry (optional)
+
+        # If remember_me is checked, extend session expiry
         if remember_me:
-            # Set longer session expiry (e.g., 2 weeks)
-            request.session.set_expiry(1209600)  # 2 weeks in seconds
+            request.session.set_expiry(1209600)  # 2 weeks
         else:
-            # Set session expiry to 20 minutes (1200 seconds) for inactivity logout
-            request.session.set_expiry(1200)
+            request.session.set_expiry(60)  # 20 minutes
 
         try:
             user = User.objects.get(username__iexact=staff_id)
@@ -43,21 +43,27 @@ def signin(request):
             try:
                 staff = Staff.objects.get(user=user)
                 login(request, user)
-                
+
+                # Check if password change is needed
                 if user.check_password(staff.national_id):
-                    # If password change is needed, preserve the next URL
                     change_password_url = reverse('accounts:change_password')
                     if next_url:
                         change_password_url += f'?next={next_url}'
                     return redirect(change_password_url)
-                
+
                 messages.success(request, 'Successfully logged in!')
                 
-                # Redirect to the next URL if provided and valid, otherwise default
-                if next_url and is_safe_url(next_url, request.get_host()):
+                # Debug the next_url and is_safe_url result
+                if next_url:
+                    is_safe = is_safe_url(next_url, request)
+                    print(f"next_url: {next_url}, is_safe: {is_safe}, host: {request.get_host()}, secure: {request.is_secure()}")
+
+                # Redirect to next_url if provided and valid
+                if next_url and is_safe_url(next_url, request):
                     return redirect(next_url)
                 else:
-                    return redirect('core:casuals')  
+                    return redirect('core:casuals')
+
             except Staff.DoesNotExist:
                 messages.error(request, 'Staff profile not found')
         else:
