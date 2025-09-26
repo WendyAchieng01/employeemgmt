@@ -1,0 +1,391 @@
+{% extends 'base1.html' %}
+
+{% block title %}Staff Directory - Staff Management System{% endblock %}
+
+{% block content %}
+{% load static %}
+      <div class="row">
+        <div class="ms-3">
+          <h3 class="mb-0 h4 font-weight-bolder">MAMA LUCY KIBAKI HOSPITAL</h3>
+          <p class="mb-4">
+            Check the current state of your organisation's staff.
+          </p>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+          <div class="card">
+            <div class="card-header p-2 ps-3">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <p class="text-sm mb-0 text-capitalize">Total Contracts</p>
+                  <h4 class="mb-0">{{ contracts.count }}</h4>
+                </div>
+                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
+                  <i class="material-symbols-rounded opacity-10">person</i>
+                </div>
+              </div>
+            </div>
+            <hr class="dark horizontal my-0">
+            <div class="card-footer p-2 ps-3">
+              <p class="mb-0 text-sm">covering <span class="text-success font-weight-bolder">{{ departments.count }} </span>departments in your facility</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+          <div class="card">
+            <div class="card-header p-2 ps-3">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <p class="text-sm mb-0 text-capitalize">Active Contracts</p>
+                  <h4 class="mb-0">{{ active.count }}</h4>
+                </div>
+                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
+                  <i class="material-symbols-rounded opacity-10">person</i>
+                </div>
+              </div>
+            </div>
+            <hr class="dark horizontal my-0">
+            <div class="card-footer p-2 ps-3">
+              <p class="mb-0 text-sm"><span class="text-success font-weight-bolder">{% widthratio active.count contracts.count 100 %}% </span>of total contracts</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+          <div class="card">
+            <div class="card-header p-2 ps-3">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <p class="text-sm mb-0 text-capitalize">Inactive/Expired Contracts</p>
+                  <h4 class="mb-0">{{ inactive.count }}</h4>
+                </div>
+                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
+                  <i class="material-symbols-rounded opacity-10">person</i>
+                </div>
+              </div>
+            </div>
+            <hr class="dark horizontal my-0">
+            <div class="card-footer p-2 ps-3">
+              <p class="mb-0 text-sm"><span class="text-danger font-weight-bolder">{% widthratio inactive.count contracts.count 100 %}% </span>of total contracts</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+          <div class="card">
+            <div class="card-header p-2 ps-3">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <p class="text-sm mb-0 text-capitalize">Contracts Pending Renewal</p>
+                  <h4 class="mb-0">0</h4>
+                </div>
+                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
+                  <i class="material-symbols-rounded opacity-10">weekend</i>
+                </div>
+              </div>
+            </div>
+            <hr class="dark horizontal my-0">
+            <div class="card-footer p-2 ps-3">
+              <p class="mb-0 text-sm"><span class="text-success font-weight-bolder">+5% </span>than yesterday</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters and Search -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header p-3 pb-2">
+              <h6 class="mb-0">Filters and Search</h6>
+            </div>
+            <div class="card-body p-3 pt-2">
+              <form method="GET" id="staffFilterForm">
+                <div class="row">
+                  <div class="col-xl-3 col-md-6 mb-3">
+                    <label class="form-label text-sm mb-0 ms-1">Search Staff</label>
+                    <div class="input-group input-group-outline">
+                      <span class="input-group-text"><i class="material-symbols-rounded opacity-10">search</i></span>
+                      <input type="text" id="searchInput" name="search" value="{{ search_query|default:'' }}"
+                            placeholder="Name, ID, Email, KRA PIN..." class="form-control">
+                    </div>
+                  </div>
+                  <div class="col-xl-3 col-md-6 mb-3">
+                    <label class="form-label text-sm mb-0 ms-1">Department</label>
+                    <div class="input-group input-group-outline">
+                      <select name="department" id="deptFilter" class="form-control">
+                        <option value="">All Departments</option>
+                        {% for dept in departments %}
+                          <option value="{{ dept.id }}" {% if current_dept == dept.id|stringformat:"s" %}selected{% endif %}>
+                            {{ dept.name }} ({{ dept.code }}) - {{ dept.staff_count }} staff
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-xl-3 col-md-6 mb-3">
+                    <label class="form-label text-sm mb-0 ms-1">Status</label>
+                    <div class="input-group input-group-outline">
+                      <select name="status" id="statusFilter" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="ACTIVE" {% if current_status == 'ACTIVE' %}selected{% endif %}>Active</option>
+                        <option value="INACTIVE" {% if current_status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
+                        <option value="TERMINATED" {% if current_status == 'TERMINATED' %}selected{% endif %}>Terminated</option>
+                        <option value="RETIRED" {% if current_status == 'RETIRED' %}selected{% endif %}>Retired</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-xl-3 col-md-6 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn bg-gradient-dark w-100 mb-0">
+                      <i class="material-symbols-rounded opacity-10 me-2">filter_alt</i>
+                      Apply Filters
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!--
+      <div class="row">
+        <div class="col-lg-4 col-md-6 mt-4 mb-4">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-0 ">Active Staff Members</h6>
+              <p class="text-sm ">As for each month of the year</p>
+              <div class="pe-2">
+                <div class="chart">
+                  <canvas id="chart-bars" class="chart-canvas" height="170"></canvas>
+                </div>
+              </div>
+              <hr class="dark horizontal">
+              <div class="d-flex ">
+                <i class="material-symbols-rounded text-sm my-auto me-1">schedule</i>
+                <p class="mb-0 text-sm"> campaign sent 2 days ago </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mt-4 mb-4">
+          <div class="card ">
+            <div class="card-body">
+              <h6 class="mb-0 "> Members on Leave </h6>
+              <p class="text-sm "> (<span class="font-weight-bolder">TOTAL</span>) As for each month of the year. </p>
+              <div class="pe-2">
+                <div class="chart">
+                  <canvas id="chart-line" class="chart-canvas" height="170"></canvas>
+                </div>
+              </div>
+              <hr class="dark horizontal">
+              <div class="d-flex ">
+                <i class="material-symbols-rounded text-sm my-auto me-1">schedule</i>
+                <p class="mb-0 text-sm"> updated 4 min ago </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 mt-4 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-0 ">Completed Tasks</h6>
+              <p class="text-sm ">Last Campaign Performance</p>
+              <div class="pe-2">
+                <div class="chart">
+                  <canvas id="chart-line-tasks" class="chart-canvas" height="170"></canvas>
+                </div>
+              </div>
+              <hr class="dark horizontal">
+              <div class="d-flex ">
+                <i class="material-symbols-rounded text-sm my-auto me-1">schedule</i>
+                <p class="mb-0 text-sm">just updated</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>-->
+      <br>
+      <div class="row mb-4">
+        <div class="col-12 mb-md-0 mb-4">
+          <div class="card">
+            <div class="card-header pb-0">
+              <div class="row">
+                <div class="col-lg-6 col-7">
+                  <h6>Contracts</h6>
+                  <p class="text-sm mb-0">
+                    <i class="fa fa-check text-info" aria-hidden="true"></i>
+                    <span class="font-weight-bold ms-1">{{ contracts.count }}</span> contracts
+                  </p>
+                </div>
+                <div class="col-lg-6 col-5 my-auto text-end">
+                  <div class="dropdown float-lg-end pe-4">
+                    <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="fa fa-ellipsis-v text-secondary"></i>
+                    </a>
+                    <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
+                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Action</a></li>
+                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Another action</a></li>
+                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Something else here</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-body px-0 pb-2">
+              <div class="table-responsive">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Staff</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Job Title</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Contract Type</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Expiry</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for contract in contracts %}
+                     <tr>
+                      <td>
+                        <div class="d-flex px-2 py-1">
+                          <div>
+                            <img src="{% static '/img/small-logos/logo-xd.svg' %}" class="avatar avatar-sm me-3" alt="xd">
+                          </div>
+                          <div class="d-flex flex-column justify-content-center">
+                            <a href="#" >
+                            <h6 class="mb-0 text-sm">{{ contract.staff }}</h6>
+                            </a>
+                          </div>
+                        </div>
+                      </td>
+                      <td>                                                
+                        <div class="avatar-group mt-2">                          
+                          <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ staff.first_name }}">
+                            <h6 class="mb-0 text-sm">{{ contract.job_title }}</h6>
+                          </a>                                              
+                        </div>                        
+                      </td>
+                      <td>                                                
+                        <div class="mt-2 justify-content-center flex-column align-middle">                    
+                            <h6 class="mb-0 text-sm">{{ contract.contract_type }}</h6>
+                          </a>                                              
+                        </div>                        
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="text-xs font-weight-bold"> {{ contract.end_date|date:"M d, Y" }} </span>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if contract.status == 'ACTIVE' %}bg-green-100 text-green-800
+                                    {% elif contract.status == 'INACTIVE' %}bg-yellow-100 text-yellow-800
+                                    {% elif contract.status == 'EXPIRED' %}bg-red-100 text-red-800
+                                    {% elif contract.status == 'TERMINATED' %}bg-gray-100 text-gray-800
+                                    {% endif %}">
+                            <i class="material-symbols-rounded text-xs mr-1">
+                                {% if contract.status == 'ACTIVE' %}check_circle
+                                {% elif contract.status == 'INACTIVE' %}pause_circle
+                                {% elif contract.status == 'EXPIRED' %}cancel
+                                {% elif contract.status == 'RETIRED' %}elderly
+                                {% endif %}
+                            </i>
+                            {{ staff.get_status_display }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="align-middle">
+                          <a href="#" class="text-purple-600 hover:text-purple-900 mr-3">
+                              <i class="material-symbols-rounded">visibility</i>
+                          </a>
+                          <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                              <i class="material-symbols-rounded">edit</i>
+                          </a>
+                          <button onclick="confirmDelete('{{ staff.unique_id }}', '{{ staff.full_name }}')" class="text-red-600 hover:text-red-900">
+                              <i class="material-symbols-rounded">delete</i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <p>No Locum Members Added</p>
+                    <a href="{% url 'core:staff_create' %}" class="mt-4 inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition duration-200">
+                    Add First Contract
+                    </a>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--
+        <div class="col-lg-4 col-md-6">
+          <div class="card h-100">
+            <div class="card-header pb-0">
+              <h6>Orders overview</h6>
+              <p class="text-sm">
+                <i class="fa fa-arrow-up text-success" aria-hidden="true"></i>
+                <span class="font-weight-bold">24%</span> this month
+              </p>
+            </div>
+            <div class="card-body p-3">
+              <div class="timeline timeline-one-side">
+                <div class="timeline-block mb-3">
+                  <span class="timeline-step">
+                    <i class="material-symbols-rounded text-success text-gradient">notifications</i>
+                  </span>
+                  <div class="timeline-content">
+                    <h6 class="text-dark text-sm font-weight-bold mb-0">$2400, Design changes</h6>
+                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">22 DEC 7:20 PM</p>
+                  </div>
+                </div>
+                <div class="timeline-block mb-3">
+                  <span class="timeline-step">
+                    <i class="material-symbols-rounded text-danger text-gradient">code</i>
+                  </span>
+                  <div class="timeline-content">
+                    <h6 class="text-dark text-sm font-weight-bold mb-0">New order #1832412</h6>
+                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">21 DEC 11 PM</p>
+                  </div>
+                </div>
+                <div class="timeline-block mb-3">
+                  <span class="timeline-step">
+                    <i class="material-symbols-rounded text-info text-gradient">shopping_cart</i>
+                  </span>
+                  <div class="timeline-content">
+                    <h6 class="text-dark text-sm font-weight-bold mb-0">Server payments for April</h6>
+                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">21 DEC 9:34 PM</p>
+                  </div>
+                </div>
+                <div class="timeline-block mb-3">
+                  <span class="timeline-step">
+                    <i class="material-symbols-rounded text-warning text-gradient">credit_card</i>
+                  </span>
+                  <div class="timeline-content">
+                    <h6 class="text-dark text-sm font-weight-bold mb-0">New card added for order #4395133</h6>
+                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">20 DEC 2:20 AM</p>
+                  </div>
+                </div>
+                <div class="timeline-block mb-3">
+                  <span class="timeline-step">
+                    <i class="material-symbols-rounded text-primary text-gradient">key</i>
+                  </span>
+                  <div class="timeline-content">
+                    <h6 class="text-dark text-sm font-weight-bold mb-0">Unlock packages for development</h6>
+                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">18 DEC 4:54 AM</p>
+                  </div>
+                </div>
+                <div class="timeline-block">
+                  <span class="timeline-step">
+                    <i class="material-symbols-rounded text-dark text-gradient">payments</i>
+                  </span>
+                  <div class="timeline-content">
+                    <h6 class="text-dark text-sm font-weight-bold mb-0">New order #9583120</h6>
+                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">17 DEC</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>-->
+      </div>
+{% endblock %}

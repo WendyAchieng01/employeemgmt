@@ -111,6 +111,43 @@ def cdash(request):
     }
     return render(request, 'casualdash.html', context)
 
+def contracts(request):
+    search_query = request.GET.get('search', '')
+    department_id = request.GET.get('department', '')
+    status = request.GET.get('status', '')
+
+    contracts = Contract.objects.all()
+    active = contracts.filter(status='ACTIVE')
+    inactive = contracts.filter(status='INACTIVE' or 'EXPIRED')
+
+    if search_query:
+        staff = staff.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(middle_name__icontains=search_query) |
+            Q(unique_id__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(kra_pin__icontains=search_query)
+        )
+
+    if department_id:
+        staff = staff.filter(department__id=department_id)
+
+    if status:
+        staff = staff.filter(employment_status=status)
+
+    # Get departments with staff count for filter dropdown
+    departments = Department.objects.annotate(staff_count=Count('staff_members'))
+
+    context = {
+        'contracts': contracts,
+        'departments': departments,
+        'active': active,
+        'inactive': inactive,
+    }
+
+    return render(request, 'contracts.html', context)
+
 
 @login_required
 def staff_list(request):

@@ -78,7 +78,7 @@
           </ul>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-dark" href="{% url 'core:locumdash' %}">
+          <a class="nav-link text-dark {% active request '/contracts/' %}" href="{% url 'core:contracts' %}">
             <i class="material-symbols-rounded opacity-5">description</i>
             <span class="nav-link-text ms-1">Contracts</span>
           </a>
@@ -419,9 +419,9 @@
       navLinks.forEach(link => {
         link.addEventListener("click", function () {
           // Remove active class from all links
-          navLinks.forEach(l => l.classList.remove("active", "bg-gradient-dark", "text-black"));
+          navLinks.forEach(l => l.classList.remove("active", "bg-gradient-dark", "text-white"));
           // Add active class to the clicked link
-          this.classList.add("active", "bg-gradient-dark", "text-black");
+          this.classList.add("active", "bg-gradient-dark", "text-white");
         });
       });
     });

@@ -14,6 +14,7 @@ urlpatterns = [
     path('api/staff/', views.staff_api, name='staff_api'),
     path('staff/<str:unique_id>/delete/', views.delete_staff, name='delete_staff'),
     path('staff/<str:unique_id>/contract/create/', views.ContractCreateView.as_view(), name='contract_create'),
+    path('contracts/', views.contracts, name='contracts'),
     path('contract/<uuid:pk>/renew/', views.ContractRenewView.as_view(), name='contract_renew'),
     path('contract/<uuid:pk>/', views.ContractDetailView.as_view(), name='contract_detail'),
     path('contract/<uuid:pk>/update/', views.ContractUpdateView.as_view(), name='contract_update'),
