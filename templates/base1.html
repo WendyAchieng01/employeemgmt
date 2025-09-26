@@ -1,4 +1,5 @@
 {% load static %}
+{% load nav_active %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -23,11 +24,17 @@
   <!-- CSS Files -->
   <link id="pagestyle" href="{% static '/css/material-dashboard.min.css%3Fv=3.2.0.css' %}" rel="stylesheet" />
   <!-- Anti-flicker snippet (recommended)  -->
+   <style>
+    .dropdown-toggle-split::after {
+      margin-left: 0.3em;
+    }
+   </style>
   <style>
     .async-hide {
       opacity: 0 !important
     }
   </style>
+
   <script>
     (function(a, s, y, n, c, h, i, d, e) {
       s.className += ' ' + y;
@@ -59,16 +66,21 @@
     <hr class="horizontal dark mt-0 mb-2">
     <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
       <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link active bg-gradient-dark text-white" href="{% url 'core:casuals' %}">
+        <li class="nav-item dropdown">
+          <a class="nav-link {% active request '/' %}" href="{% url 'core:staff_list' %}" id="casualsDropdown"
+            role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
             <i class="material-symbols-rounded opacity-5">dashboard</i>
-            <span class="nav-link-text ms-1">Casuals</span>
+            <span class="nav-link-text ms-1">Dashboard</span>
           </a>
+          <ul class="dropdown-menu" aria-labelledby="casualsDropdown">
+            <li><a class="dropdown-item {% active request '/casuals/' %}" href="{% url 'core:casuals' %}">Casuals</a></li>
+            <li><a class="dropdown-item {% active request '/locumers/' %}" href="{% url 'core:locumdash' %}">Locumers</a></li>
+          </ul>
         </li>
         <li class="nav-item">
           <a class="nav-link text-dark" href="{% url 'core:locumdash' %}">
-            <i class="material-symbols-rounded opacity-5">dashboard</i>
-            <span class="nav-link-text ms-1">Locumers</span>
+            <i class="material-symbols-rounded opacity-5">description</i>
+            <span class="nav-link-text ms-1">Contracts</span>
           </a>
         </li>
         <li class="nav-item">
@@ -364,15 +376,52 @@
   <script src="{% static '/js/plugins/smooth-scrollbar.min.js' %}"></script>
   <script src="{% static '/js/plugins/chartjs.min.js' %}"></script>
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdown = document.querySelector('#casualsDropdown');
+      let timeoutId;
+
+      dropdown.addEventListener('mouseenter', function() {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          const bsDropdown = new bootstrap.Dropdown(dropdown);
+          bsDropdown.show();
+        }, 300); // 300ms delay
+      });
+
+      dropdown.addEventListener('mouseleave', function() {
+        clearTimeout(timeoutId);
+      });
+
+      const dropdownMenu = dropdown.nextElementSibling;
+      dropdownMenu.addEventListener('mouseenter', function() {
+        clearTimeout(timeoutId);
+      });
+
+      dropdownMenu.addEventListener('mouseleave', function() {
+        timeoutId = setTimeout(() => {
+          const bsDropdown = new bootstrap.Dropdown(dropdown);
+          bsDropdown.hide();
+        }, 300);
+      });
+
+      // Ensure clicking the main link works
+      dropdown.addEventListener('click', function(e) {
+        if (!dropdown.classList.contains('show')) {
+          window.location.href = dropdown.getAttribute('href');
+        }
+      });
+    });
+  </script>
+  <script>
     document.addEventListener("DOMContentLoaded", function () {
       const navLinks = document.querySelectorAll(".nav-link");
 
       navLinks.forEach(link => {
         link.addEventListener("click", function () {
           // Remove active class from all links
-          navLinks.forEach(l => l.classList.remove("active", "bg-gradient-dark", "text-white"));
+          navLinks.forEach(l => l.classList.remove("active", "bg-gradient-dark", "text-black"));
           // Add active class to the clicked link
-          this.classList.add("active", "bg-gradient-dark", "text-white");
+          this.classList.add("active", "bg-gradient-dark", "text-black");
         });
       });
     });

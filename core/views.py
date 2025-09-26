@@ -119,6 +119,8 @@ def staff_list(request):
     status = request.GET.get('status', '')
 
     staff = Staff.objects.all()
+    active = staff.filter(employment_status='ACTIVE')
+    inactive = staff.filter(employment_status='INACTIVE')
 
     if search_query:
         staff = staff.filter(
@@ -140,12 +142,14 @@ def staff_list(request):
 
     context = {
         'staff_list': staff,
+        'active': active,
+        'inactive': inactive,
         'departments': departments,
         'search_query': search_query,
         'current_dept': department_id,
         'current_status': status,
     }
-    return render(request, 'staff_list.html', context)
+    return render(request, 'locumdash.html', context)
 
 @login_required
 @user_passes_test(is_admin)
