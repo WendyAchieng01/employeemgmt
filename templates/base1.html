@@ -84,7 +84,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-dark" href="billing.html">
+          <a class="nav-link text-dark" href="{% url 'core:billing' %}">
             <i class="material-symbols-rounded opacity-5">receipt_long</i>
             <span class="nav-link-text ms-1">Billing</span>
           </a>
@@ -95,11 +95,6 @@
             <span class="nav-link-text ms-1">Virtual Reality</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="rtl.html">
-            <i class="material-symbols-rounded opacity-5">format_textdirection_r_to_l</i>
-            <span class="nav-link-text ms-1">RTL</span>
-          </a>
         </li>
         <li class="nav-item">
           <a class="nav-link text-dark" href="notifications.html">
@@ -132,8 +127,8 @@
     </div>
     <div class="sidenav-footer position-absolute w-100 bottom-0 ">
       <div class="mx-3">
-        <a class="btn btn-outline-dark mt-4 w-100" href="#" type="button">About</a>
-        <a class="btn bg-gradient-dark w-100" href="#" type="button">Contacts</a>
+        <a class="btn btn-outline-dark mt-4 w-100" href="{% url 'core:about' %}" type="button">About</a>
+        <a class="btn bg-gradient-dark w-100" href="{% url 'core:billing' %}" type="button">Contacts</a>
       </div>
     </div>
   </aside>

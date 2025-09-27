@@ -245,76 +245,77 @@
                   </thead>
                   <tbody>
                     {% for contract in contracts %}
-                     <tr>
+                    <tr>
                       <td>
                         <div class="d-flex px-2 py-1">
                           <div>
                             <img src="{% static '/img/small-logos/logo-xd.svg' %}" class="avatar avatar-sm me-3" alt="xd">
                           </div>
                           <div class="d-flex flex-column justify-content-center">
-                            <a href="#" >
-                            <h6 class="mb-0 text-sm">{{ contract.staff }}</h6>
+                            <a href="#">
+                              <h6 class="mb-0 text-sm">{{ contract.staff }}</h6>
                             </a>
                           </div>
                         </div>
                       </td>
-                      <td>                                                
-                        <div class="avatar-group mt-2">                          
-                          <a href="#" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ staff.first_name }}">
-                            <h6 class="mb-0 text-sm">{{ contract.job_title }}</h6>
-                          </a>                                              
-                        </div>                        
+                      <td>
+                        <div class="mt-2">
+                          <a href="#" class="text-sm">
+                            <h6 class="mb-0">{{ contract.job_title }}</h6>
+                          </a>
+                        </div>
                       </td>
-                      <td>                                                
-                        <div class="mt-2 justify-content-center flex-column align-middle">                    
-                            <h6 class="mb-0 text-sm">{{ contract.contract_type }}</h6>
-                          </a>                                              
-                        </div>                        
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> {{ contract.end_date|date:"M d, Y" }} </span>
+                      <td>
+                        <div class="mt-2 justify-content-center flex-column align-middle">
+                          <h6 class="mb-0 text-sm">{{ contract.contract_type }}</h6>
+                        </div>
                       </td>
                       <td class="align-middle text-center text-sm">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                        <span class="text-xs font-weight-bold">{{ contract.end_date|date:"M d, Y" }}</span>
+                      </td>
+                      <td class="align-middle text-center text-sm">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     {% if contract.status == 'ACTIVE' %}bg-green-100 text-green-800
                                     {% elif contract.status == 'INACTIVE' %}bg-yellow-100 text-yellow-800
                                     {% elif contract.status == 'EXPIRED' %}bg-red-100 text-red-800
                                     {% elif contract.status == 'TERMINATED' %}bg-gray-100 text-gray-800
+                                    {% elif contract.status == 'RETIRED' %}bg-blue-100 text-blue-800
                                     {% endif %}">
-                            <i class="material-symbols-rounded text-xs mr-1">
-                                {% if contract.status == 'ACTIVE' %}check_circle
-                                {% elif contract.status == 'INACTIVE' %}pause_circle
-                                {% elif contract.status == 'EXPIRED' %}cancel
-                                {% elif contract.status == 'RETIRED' %}elderly
-                                {% endif %}
-                            </i>
-                            {{ staff.get_status_display }}
+                          <i class="material-symbols-rounded text-xs mr-1">
+                            {% if contract.status == 'ACTIVE' %}check_circle
+                            {% elif contract.status == 'INACTIVE' %}pause_circle
+                            {% elif contract.status == 'EXPIRED' %}cancel
+                            {% elif contract.status == 'RETIRED' %}elderly
+                            {% endif %}
+                          </i>
+                          {{ contract.get_status_display }}
                         </span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="align-middle">
                           <a href="#" class="text-purple-600 hover:text-purple-900 mr-3">
-                              <i class="material-symbols-rounded">visibility</i>
+                            <i class="material-symbols-rounded">visibility</i>
                           </a>
                           <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">
-                              <i class="material-symbols-rounded">edit</i>
+                            <i class="material-symbols-rounded">edit</i>
                           </a>
-                          <button onclick="confirmDelete('{{ staff.unique_id }}', '{{ staff.full_name }}')" class="text-red-600 hover:text-red-900">
-                              <i class="material-symbols-rounded">delete</i>
+                          <button onclick="confirmDelete('{{ contract.staff.unique_id }}', '{{ contract.staff.full_name }}')" class="text-red-600 hover:text-red-900">
+                            <i class="material-symbols-rounded">delete</i>
                           </button>
                         </div>
                       </td>
                     </tr>
                     {% empty %}
-                    <p>No Locum Members Added</p>
+                    <p>No Locum or Casual Members Added</p>
                     <a href="{% url 'core:staff_create' %}" class="mt-4 inline-block bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition duration-200">
-                    Add First Contract
+                      Add First Contract
                     </a>
                     {% endfor %}
                   </tbody>
                 </table>
               </div>
             </div>
+
           </div>
         </div>
         <!--

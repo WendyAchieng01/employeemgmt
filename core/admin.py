@@ -13,20 +13,27 @@ class DepartmentAdmin(admin.ModelAdmin):
         return obj.staff_members.count()
     staff_count.short_description = 'Staff Count'
 
-@admin.register(Staff)
+from django.contrib import admin
+from .models import Staff
+
+# Add a custom method for full_name
 class StaffAdmin(admin.ModelAdmin):
     list_display = [
-        'unique_id', 'full_name', 'department', 'designation', 'employment_status',
-        'employment_date', 'is_admin'
+        'unique_id', 'full_name', 'department', 'designation', 
+        'employment_category', 'employment_status', 'employment_date', 
+        'salary', 'is_admin'
     ]
+    
     list_filter = [
-        'department', 'gender', 
-        'employment_date', 'created_at', 'is_admin'
+        'department', 'gender', 'employment_category', 
+        'employment_status', 'employment_date', 'created_at', 'is_admin'
     ]
+    
     search_fields = [
         'unique_id', 'first_name', 'last_name', 'email', 
         'national_id', 'designation'
     ]
+    
     readonly_fields = ['unique_id', 'created_at', 'updated_at', 'years_of_service']
     
     fieldsets = (
@@ -42,13 +49,13 @@ class StaffAdmin(admin.ModelAdmin):
         }),
         ('Employment Information', {
             'fields': (
-                'department', 'designation', 'employment_date',
-                'salary', 'is_admin'
+                'department', 'designation', 'employment_date', 
+                'employment_category', 'salary', 'employment_status', 'is_admin'
             )
         }),
         ('Emergency Contact', {
             'fields': (
-                'emergency_contact_name', 'emergency_contact_phone',
+                'emergency_contact_name', 'emergency_contact_phone', 
                 'emergency_contact_relationship'
             )
         }),
@@ -57,6 +64,19 @@ class StaffAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    def full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
+    full_name.short_description = 'Full Name'
+
+    def years_of_service(self, obj):
+        from datetime import date
+        if obj.employment_date:
+            return date.today().year - obj.employment_date.year
+        return 0
+    years_of_service.short_description = 'Years of Service'
+
+admin.site.register(Staff, StaffAdmin)
 
 
 @admin.register(Contract)

@@ -73,6 +73,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'biodata.wsgi.application'
 
+LOGOUT_REDIRECT_URL = 'accounts:signout'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

@@ -188,8 +188,6 @@ def staff_list(request):
     }
     return render(request, 'locumdash.html', context)
 
-@login_required
-@user_passes_test(is_admin)
 def staff_create(request):
     if request.method == 'POST':
         form = StaffForm(request.POST)
@@ -399,3 +397,10 @@ class ContractDeleteView(DeleteView):
         staff_unique_id = self.object.staff.unique_id
         messages.success(self.request, 'Contract deleted successfully')
         return reverse_lazy('core:staff_detail', kwargs={'unique_id': staff_unique_id})
+    
+
+def billing(request):
+    return render(request, "billing.html")
+
+def about(request):
+    return render(request, "virtual-reality.html")

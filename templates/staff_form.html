@@ -164,13 +164,13 @@
                     {% endfor %}
                 </div>
 
-                <!-- Position -->
+                <!-- Designation -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.position.label }}{% if form.position.field.required %}<span class="text-red-500">*</span>{% endif %}
+                        {{ form.designation.label }}{% if form.designation.field.required %}<span class="text-red-500">*</span>{% endif %}
                     </label>
-                    {{ form.position }}
-                    {% for error in form.position.errors %}
+                    {{ form.designation }}
+                    {% for error in form.designation.errors %}
                         <p class="mt-1 text-sm text-red-600">{{ error }}</p>
                     {% endfor %}
                 </div>
@@ -186,24 +186,13 @@
                     {% endfor %}
                 </div>
 
-                <!-- Employment Status 
+                <!-- Employment Status -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         {{ form.employment_status.label }}{% if form.employment_status.field.required %}<span class="text-red-500">*</span>{% endif %}
                     </label>
                     {{ form.employment_status }}
                     {% for error in form.employment_status.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>-->
-
-                <!-- Salary -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.salary.label }}{% if form.salary.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.salary }}
-                    {% for error in form.salary.errors %}
                         <p class="mt-1 text-sm text-red-600">{{ error }}</p>
                     {% endfor %}
                 </div>
@@ -219,6 +208,28 @@
                     {% endfor %}
                 </div>
 
+                <!-- Salary -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.salary.label }}{% if form.salary.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.salary }}
+                    {% for error in form.salary.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Is Admin -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.is_admin.label }}{% if form.is_admin.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.is_admin }}
+                    {% for error in form.is_admin.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
                 <!-- Emergency Contact Section -->
                 <div class="md:col-span-2 mt-6">
                     <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center border-b pb-2">
@@ -226,7 +237,7 @@
                     </h4>
                 </div>
 
-                <!-- Contact Name -->
+                <!-- Emergency Contact Name -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         {{ form.emergency_contact_name.label }}{% if form.emergency_contact_name.field.required %}<span class="text-red-500">*</span>{% endif %}
@@ -237,7 +248,7 @@
                     {% endfor %}
                 </div>
 
-                <!-- Contact Phone -->
+                <!-- Emergency Contact Phone -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         {{ form.emergency_contact_phone.label }}{% if form.emergency_contact_phone.field.required %}<span class="text-red-500">*</span>{% endif %}
@@ -248,7 +259,7 @@
                     {% endfor %}
                 </div>
 
-                <!-- Relationship -->
+                <!-- Emergency Contact Relationship -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         {{ form.emergency_contact_relationship.label }}{% if form.emergency_contact_relationship.field.required %}<span class="text-red-500">*</span>{% endif %}

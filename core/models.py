@@ -34,7 +34,9 @@ class Staff(models.Model):
     EMPLOYMENT_CATEGORY_CHOICES = [
         ('LOCUM', 'Locum'),
         ('CASUAL', 'Casual'),
+        ('PERMANENT', 'Permanent and Pentionable'),
     ]
+
     EMPLOYMENT_STATUS_CHOICES = (
         ('AWAITING CONTRACT', 'Awaiting Contract'),
         ('ACTIVE', 'Active'),
@@ -170,8 +172,6 @@ class Staff(models.Model):
             end_date__gte=timezone.now().date(),
             end_date__lte=timezone.now().date() + timedelta(days=30)
         )
-
-
 
 class Contract(models.Model):
     CONTRACT_TYPES = (

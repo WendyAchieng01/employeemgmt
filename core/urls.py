@@ -19,4 +19,6 @@ urlpatterns = [
     path('contract/<uuid:pk>/', views.ContractDetailView.as_view(), name='contract_detail'),
     path('contract/<uuid:pk>/update/', views.ContractUpdateView.as_view(), name='contract_update'),
     path('contract/<uuid:pk>/delete/', views.ContractDeleteView.as_view(), name='contract_delete'),
+    path('billing/', views.billing, name='billing'),
+    path('about/', views.about, name='about'),
 ]
