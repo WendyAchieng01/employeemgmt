@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from core.models import Staff
 import re
+from django.views.decorators.csrf import csrf_protect
 
 def is_admin(user):
     return user.groups.filter(name='Admin').exists()
@@ -18,6 +19,7 @@ def is_safe_url(url, request):
     allowed_hosts = {request.get_host()}
     return url_has_allowed_host_and_scheme(url, allowed_hosts=allowed_hosts, require_https=request.is_secure())
 
+@csrf_protect
 def signin(request):
     # Get the 'next' parameter from the request (either GET or POST)
     next_url = request.POST.get('next') or request.GET.get('next', '')
@@ -31,7 +33,7 @@ def signin(request):
         if remember_me:
             request.session.set_expiry(1209600)  # 2 weeks
         else:
-            request.session.set_expiry(60)  # 20 minutes
+            request.session.set_expiry(1200)  # 20 minutes
 
         try:
             user = User.objects.get(username__iexact=staff_id)
@@ -53,25 +55,38 @@ def signin(request):
 
                 messages.success(request, 'Successfully logged in!')
                 
+                # Determine redirect URL based on user type
+                if staff.is_admin:
+                    redirect_url = reverse('core:staff_list')  # Admin dashboard
+                else:
+                    # Redirect based on employment category
+                    if staff.employment_category == 'CASUAL':
+                        redirect_url = reverse('core:casuals')  # Casual dashboard
+                    elif staff.employment_category == 'LOCUM':
+                        redirect_url = reverse('core:locumdash')  # Locum dashboard
+                    else:
+                        redirect_url = reverse('core:staff_list')  # Fallback for PERMANENT or undefined
+                        messages.warning(request, 'No specific dashboard for your employment category.')
+
                 # Debug the next_url and is_safe_url result
                 if next_url:
-                    is_safe = is_safe_url(next_url, request)
+                    is_safe = is_safe_url(next_url, allowed_hosts=None)
                     print(f"next_url: {next_url}, is_safe: {is_safe}, host: {request.get_host()}, secure: {request.is_secure()}")
 
-                # Redirect to next_url if provided and valid
-                if next_url and is_safe_url(next_url, request):
+                # Redirect to next_url if provided and valid, otherwise use determined redirect_url
+                if next_url and is_safe_url(next_url, allowed_hosts=None):
                     return redirect(next_url)
                 else:
-                    return redirect('core:casuals')
+                    return redirect(redirect_url)
 
             except Staff.DoesNotExist:
                 messages.error(request, 'Staff profile not found')
+                return redirect('core:staff_list')  # Fallback for users without Staff profile
         else:
             messages.error(request, 'Invalid Staff ID or password')
 
     # For GET requests or failed login, pass next_url to template
     return render(request, 'sign-in.html', {'next_url': next_url})
-
 def signup(request):
     if request.method == 'POST':
         name = request.POST.get('name')
