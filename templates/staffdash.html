@@ -441,7 +441,7 @@
                     {% if staff.current_contract.document %}
                         <a href="{{ staff.current_contract.document.url }}" class="btn btn-outline" target="_blank">
                             <span class="material-symbols-rounded">visibility</span>
-                            View Contract Document
+                            View Contract Document {{ staff.current_contract.document.name }}
                         </a>
                     {% endif %}
                     

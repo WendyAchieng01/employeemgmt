@@ -1,285 +1,293 @@
-{% extends 'base.html' %}
-
+{% extends 'base1.html' %}
 {% block title %}{{ title }} - Staff Management System{% endblock %}
-
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
-            <div class="flex items-center space-x-4">
-                <a href="{% url 'core:casuals' %}" class="text-purple-600 hover:text-purple-800">
-                    <i class="fas fa-arrow-left mr-2"></i>Back to Staff List
-                </a>
-            </div>
+{% load static %}
+{% load widget_tweaks %}
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card shadow-lg">
+      <div class="card-header p-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white">
+        <h3 class="mb-0 text-xl font-weight-bolder tracking-tight">{{ title }}</h3>
+      </div>
+      <div class="card-body p-4 bg-gray-50">
+        <div class="mb-4">
+          <a href="{% url 'core:casuals' %}" class="text-sm text-purple-600 hover:text-purple-800 transition-colors duration-200">
+            <i class="material-symbols-rounded opacity-80 me-2">arrow_back</i>Back to Staff List
+          </a>
         </div>
-
-        <div class="bg-white rounded-lg card-shadow overflow-hidden">
-            <div class="gradient-bg text-white px-6 py-4">
-                <h3 class="text-xl font-bold">{{ title }}</h3>
+        <form method="post" id="staffForm">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="mb-4 p-3 bg-red-50 border border-red-300 text-red-600 rounded-lg text-sm">
+              {{ form.non_field_errors }}
             </div>
-            
-        <form method="post" class="p-6">
-            {% csrf_token %}
-            
-            {% if form.non_field_errors %}
-                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                    {{ form.non_field_errors }}
-                </div>
-            {% endif %}
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Personal Information Section -->
-                <div class="md:col-span-2">
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center border-b pb-2">
-                        <i class="fas fa-user mr-2 text-blue-500"></i>Personal Information
-                    </h4>
-                </div>
-
-                <!-- First Name -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.first_name.label }}{% if form.first_name.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.first_name }}
-                    {% for error in form.first_name.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Middle Name -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.middle_name.label }}</label>
-                    {{ form.middle_name }}
-                    {% for error in form.middle_name.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Last Name -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.last_name.label }}{% if form.last_name.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.last_name }}
-                    {% for error in form.last_name.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Email -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.email.label }}{% if form.email.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.email }}
-                    {% for error in form.email.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Phone -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.phone.label }}{% if form.phone.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.phone }}
-                    {% for error in form.phone.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Gender -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.gender.label }}{% if form.gender.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.gender }}
-                    {% for error in form.gender.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Date of Birth -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.date_of_birth.label }}{% if form.date_of_birth.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.date_of_birth }}
-                    {% for error in form.date_of_birth.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- National ID -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.national_id.label }}{% if form.national_id.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.national_id }}
-                    {% for error in form.national_id.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                    <p class="mt-1 text-xs text-gray-500">This will be used to generate the staff Unique ID</p>
-                </div>
-
-                <!-- Address -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.address.label }}{% if form.address.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.address }}
-                    {% for error in form.address.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- KRA PIN -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.kra_pin.label }}{% if form.kra_pin.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.kra_pin }}
-                    {% for error in form.kra_pin.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                    <p class="mt-1 text-xs text-gray-500">Enter a valid KRA PIN (e.g., A123456789Z)</p>
-                </div>
-
-                <!-- Employment Information Section -->
-                <div class="md:col-span-2 mt-6">
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center border-b pb-2">
-                        <i class="fas fa-briefcase mr-2 text-green-500"></i>Employment Information
-                    </h4>
-                </div>
-
-                <!-- Department -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.department.label }}{% if form.department.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.department }}
-                    {% for error in form.department.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Designation -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.designation.label }}{% if form.designation.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.designation }}
-                    {% for error in form.designation.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Employment Date -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.employment_date.label }}{% if form.employment_date.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.employment_date }}
-                    {% for error in form.employment_date.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Employment Status -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.employment_status.label }}{% if form.employment_status.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.employment_status }}
-                    {% for error in form.employment_status.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Employment Category -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.employment_category.label }}{% if form.employment_category.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.employment_category }}
-                    {% for error in form.employment_category.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Salary -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.salary.label }}{% if form.salary.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.salary }}
-                    {% for error in form.salary.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Is Admin -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.is_admin.label }}{% if form.is_admin.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.is_admin }}
-                    {% for error in form.is_admin.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Emergency Contact Section -->
-                <div class="md:col-span-2 mt-6">
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center border-b pb-2">
-                        <i class="fas fa-phone-alt mr-2 text-red-500"></i>Emergency Contact
-                    </h4>
-                </div>
-
-                <!-- Emergency Contact Name -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.emergency_contact_name.label }}{% if form.emergency_contact_name.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.emergency_contact_name }}
-                    {% for error in form.emergency_contact_name.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Emergency Contact Phone -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.emergency_contact_phone.label }}{% if form.emergency_contact_phone.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.emergency_contact_phone }}
-                    {% for error in form.emergency_contact_phone.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Emergency Contact Relationship -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ form.emergency_contact_relationship.label }}{% if form.emergency_contact_relationship.field.required %}<span class="text-red-500">*</span>{% endif %}
-                    </label>
-                    {{ form.emergency_contact_relationship }}
-                    {% for error in form.emergency_contact_relationship.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                    {% endfor %}
-                </div>
+          {% endif %}
+          <!-- Personal Information Section -->
+          <div class="mb-5">
+            <h6 class="mb-2 text-uppercase text-gray-500 text-xs font-weight-bolder opacity-80 flex items-center">
+              <i class="material-symbols-rounded text-blue-500 me-2">person</i>Personal Information
+            </h6>
+            <hr class="dark horizontal my-0 border-gray-300">
+          </div>
+          <div class="row">
+            <!-- First Name -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.first_name.label }}{% if form.first_name.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.first_name|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.first_name.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
             </div>
-
-            <!-- Submit Button -->
-            <div class="mt-8 flex justify-end">
-                <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2 rounded-lg shadow">
-                    <i class="fas fa-save mr-2"></i> Save Staff
-                </button>
+            <!-- Middle Name -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.middle_name.label }}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.middle_name|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.middle_name.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
             </div>
+            <!-- Last Name -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.last_name.label }}{% if form.last_name.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.last_name|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.last_name.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Email -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.email.label }}{% if form.email.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.email|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.email.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Phone -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.phone.label }}{% if form.phone.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.phone|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.phone.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Gender -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.gender.label }}{% if form.gender.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.gender|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.gender.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Date of Birth -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.date_of_birth.label }}{% if form.date_of_birth.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.date_of_birth|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.date_of_birth.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- National ID -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.national_id.label }}{% if form.national_id.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.national_id|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.national_id.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+              <p class="mt-1 text-xs text-gray-500 opacity-70">This will be used to generate the staff Unique ID</p>
+            </div>
+            <!-- Address -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.address.label }}{% if form.address.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.address|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.address.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- KRA PIN -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.kra_pin.label }}{% if form.kra_pin.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.kra_pin|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.kra_pin.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+              <p class="mt-1 text-xs text-gray-500 opacity-70">Enter a valid KRA PIN (e.g., A123456789Z)</p>
+            </div>
+          </div>
+          <!-- Employment Information Section -->
+          <div class="mb-5 mt-5">
+            <h6 class="mb-2 text-uppercase text-gray-500 text-xs font-weight-bolder opacity-80 flex items-center">
+              <i class="material-symbols-rounded text-green-500 me-2">work</i>Employment Information
+            </h6>
+            <hr class="dark horizontal my-0 border-gray-300">
+          </div>
+          <div class="row">
+            <!-- Department -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.department.label }}{% if form.department.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.department|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.department.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Designation -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.designation.label }}{% if form.designation.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.designation|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.designation.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Employment Date -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.employment_date.label }}{% if form.employment_date.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.employment_date|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.employment_date.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Employment Status -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.employment_status.label }}{% if form.employment_status.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.employment_status|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.employment_status.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Employment Category -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.employment_category.label }}{% if form.employment_category.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.employment_category|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.employment_category.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Salary -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.salary.label }}{% if form.salary.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.salary|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.salary.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Emergency Contact Section -->
+          <div class="mb-5 mt-5">
+            <h6 class="mb-2 text-uppercase text-gray-500 text-xs font-weight-bolder opacity-80 flex items-center">
+              <i class="material-symbols-rounded text-red-500 me-2">emergency</i>Emergency Contact
+            </h6>
+            <hr class="dark horizontal my-0 border-gray-300">
+          </div>
+          <div class="row">
+            <!-- Emergency Contact Name -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.emergency_contact_name.label }}{% if form.emergency_contact_name.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.emergency_contact_name|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.emergency_contact_name.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Emergency Contact Phone -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.emergency_contact_phone.label }}{% if form.emergency_contact_phone.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.emergency_contact_phone|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.emergency_contact_phone.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+            <!-- Emergency Contact Relationship -->
+            <div class="col-md-6 mb-4">
+              <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                {{ form.emergency_contact_relationship.label }}{% if form.emergency_contact_relationship.field.required %}<span class="text-red-500">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
+                {{ form.emergency_contact_relationship|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+              </div>
+              {% for error in form.emergency_contact_relationship.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Submit Button -->
+          <div class="mt-5 d-flex justify-content-end">
+            <button type="submit" class="btn btn-success">
+              <i class="material-symbols-rounded me-2">save</i>Save Staff
+            </button>
+          </div>
         </form>
-
-        </div>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}

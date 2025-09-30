@@ -367,11 +367,11 @@ class ContractRenewView(LoginRequiredMixin, UpdateView):
                 return reverse_lazy('core:staff_detail', kwargs={'unique_id': self.object.staff.unique_id})
             else:
                 messages.warning(self.request, 'Staff details not found. Redirecting to contract list.')
-                return reverse_lazy('core:contract_list')
+                return reverse_lazy('core:contracts')
         except Exception as e:
             logger.error(f"Error in get_success_url: {str(e)}", exc_info=True)
             messages.error(self.request, f'Error redirecting: {str(e)}')
-            return reverse_lazy('core:contract_list')
+            return reverse_lazy('core:contracts')
 
     def get_queryset(self):
         return Contract.objects.filter(status='ACTIVE')

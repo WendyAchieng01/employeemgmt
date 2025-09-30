@@ -173,6 +173,15 @@ class Staff(models.Model):
             end_date__lte=timezone.now().date() + timedelta(days=30)
         )
 
+def contract_upload_path(instance, filename):
+    """
+    Generate a file upload path using the staff ID.
+    """
+    # Assuming instance has a staff_id field or is linked to a Staff model
+    staff_id = getattr(instance, 'unique_id', None) or instance.staff.unique_id
+    return f'contracts/staff_{staff_id}/{filename}'
+
+
 class Contract(models.Model):
     CONTRACT_TYPES = (
         ('PERMANENT', 'Permanent'),
@@ -198,7 +207,7 @@ class Contract(models.Model):
     job_title = models.CharField(max_length=200)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     status = models.CharField(max_length=20, choices=CONTRACT_STATUS, default='ACTIVE')
-    document = models.FileField(upload_to='contracts/%Y/%m/%d/', blank=True, null=True)
+    document = models.FileField(upload_to=contract_upload_path, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     
     
