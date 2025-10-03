@@ -403,4 +403,4 @@ def billing(request):
     return render(request, "billing.html")
 
 def about(request):
-    return render(request, "virtual-reality.html")
+    return render(request, "tables.html")

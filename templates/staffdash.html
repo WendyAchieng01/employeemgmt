@@ -1,526 +1,197 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Profile - {{ staff.first_name }}</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-        
-        body {
-            background-color: #f5f7f9;
-            color: #333;
-            line-height: 1.6;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .header h1 {
-            color: #1a365d;
-            font-weight: 700;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 50px;
-            color: white;
-        }
-        
-        .profile-info h2 {
-            font-size: 28px;
-            color: #1a365d;
-            margin-bottom: 8px;
-        }
-        
-        .profile-info p {
-            color: #718096;
-            margin-bottom: 4px;
-        }
-        
-        .staff-id {
-            display: inline-block;
-            background: #edf2f7;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            color: #4a5568;
-            margin-top: 8px;
-        }
-        
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            margin-top: 12px;
-        }
-        
-        .status-active {
-            background: #c6f6d5;
-            color: #276749;
-        }
-        
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-        
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 24px;
-        }
-        
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .info-table tr {
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .info-table tr:last-child {
-            border-bottom: none;
-        }
-        
-        .info-table td {
-            padding: 12px 0;
-        }
-        
-        .info-table td:first-child {
-            font-weight: 500;
-            color: #4a5568;
-            width: 40%;
-        }
-        
-        .contract-section {
-            background: #f8fafc;
-            border-left: 4px solid #667eea;
-            padding: 16px;
-            border-radius: 0 8px 8px 0;
-            margin-top: 16px;
-        }
-        
-        .contract-section h4 {
-            color: #2d3748;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn {
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary {
-            background: #667eea;
-            color: white;
-            border: none;
-        }
-        
-        .btn-primary:hover {
-            background: #5a67d8;
-        }
-        
-        .btn-outline {
-            background: transparent;
-            color: #667eea;
-            border: 1px solid #667eea;
-        }
-        
-        .btn-outline:hover {
-            background: #f0f4ff;
-        }
-        
-        .footer {
-            display: flex;
-            justify-content: space-between;
-            color: #718096;
-            font-size: 14px;
-            margin-top: 24px;
-        }
-        
-        @media (max-width: 900px) {
-            .grid-2, .grid-3 {
-                grid-template-columns: 1fr;
-            }
-            
-            .profile-header {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <button onclick="goToReferrer()" class="btn btn-primary">
-                <span class="material-symbols-rounded">arrow_back</span>
-                Back
-            </button>
-            <button class="btn btn-primary">
-                <span class="material-symbols-rounded">download</span>
-                Export PDF
-            </button>
-        </div>
-        
-        <div class="card">
-            <div class="profile-header">
-                <div class="avatar">
-                    <span class="material-symbols-rounded">person</span>
-                </div>
-                <div class="profile-info">
-                    <h2>{{ staff.full_name }}</h2>
-                    <p>{{ staff.designation }}</p>
-                    <span class="staff-id">{{ staff.unique_id }}</span>
-                    <div class="status-badge status-active">
-                        <span class="material-symbols-rounded">check_circle</span>
-                        {{ staff.get_employment_status_display }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="grid-2">
-            <div class="card">
-                <h3 class="section-title">
-                    <span class="material-symbols-rounded">info</span>
-                    Quick Information
-                </h3>
-                <table class="info-table">
-                    <tr>
-                        <td>Department:</td>
-                        <td>{{ staff.department.name }}</td>
-                    </tr>
-                    <tr>
-                        <td>Years of Service:</td>
-                        <td>{{ staff.years_of_service }}</td>
-                    </tr>
-                    <tr>
-                        <td>Employment Date:</td>
-                        <td>{{ staff.employment_date|date:"M d, Y" }}</td>
-                    </tr>
-                    <tr>
-                        <td>Status:</td>
-                        <td>
-                            <span class="status-badge status-active">
-                                <span class="material-symbols-rounded">check_circle</span>
-                                {{ staff.get_employment_status_display }}
-                            </span>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            
-            <div class="card">
-                <h3 class="section-title">
-                    <span class="material-symbols-rounded">emergency</span>
-                    Emergency Contact
-                </h3>
-                <table class="info-table">
-                    <tr>
-                        <td>Name:</td>
-                        <td>{{ staff.emergency_contact_name }}</td>
-                    </tr>
-                    <tr>
-                        <td>Phone:</td>
-                        <td>{{ staff.emergency_contact_phone }}</td>
-                    </tr>
-                    <tr>
-                        <td>Relationship:</td>
-                        <td>{{ staff.emergency_contact_relationship }}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        
-        <div class="grid-3">
-            <div class="card">
-                <h3 class="section-title">
-                    <span class="material-symbols-rounded">person</span>
-                    Personal Information
-                </h3>
-                <table class="info-table">
-                    <tr>
-                        <td>Full Name:</td>
-                        <td>{{ staff.full_name }}</td>
-                    </tr>
-                    <tr>
-                        <td>Email:</td>
-                        <td>{{ staff.email }}</td>
-                    </tr>
-                    <tr>
-                        <td>Phone:</td>
-                        <td>{{ staff.phone }}</td>
-                    </tr>
-                    <tr>
-                        <td>Gender:</td>
-                        <td>{{ staff.get_gender_display }}</td>
-                    </tr>
-                    <tr>
-                        <td>Date of Birth:</td>
-                        <td>{{ staff.date_of_birth|date:"M d, Y" }}</td>
-                    </tr>
-                    <tr>
-                        <td>National ID:</td>
-                        <td>{{ staff.national_id }}</td>
-                    </tr>
-                    <tr>
-                        <td>Address:</td>
-                        <td>{{ staff.address }}</td>
-                    </tr>
-                    <tr>
-                        <td>KRA PIN:</td>
-                        <td>{{ staff.kra_pin|default:"Not provided" }}</td>
-                    </tr>
-                </table>
-            </div>
-            
-            <div class="card">
-                
-                <h3 class="section-title" style="margin-top: 24px;">
-                    <span class="material-symbols-rounded">work</span>
-                    Employment Information
-                </h3>
-                <table class="info-table">
-                    <tr>
-                        <td>Staff ID:</td>
-                        <td>{{ staff.unique_id }}</td>
-                    </tr>
-                    <tr>
-                        <td>Department:</td>
-                        <td>{{ staff.department.name }}</td>
-                    </tr>
-                    <tr>
-                        <td>Position:</td>
-                        <td>{{ staff.position }}</td>
-                    </tr>
-                    <tr>
-                        <td>Employment Date:</td>
-                        <td>{{ staff.employment_date|date:"M d, Y" }}</td>
-                    </tr>
-                    <tr>
-                        <td>Employment Status:</td>
-                        <td>
-                            <span class="status-badge status-active">
-                                <span class="material-symbols-rounded">check_circle</span>
-                                {{ staff.get_employment_status_display }}
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Years of Service:</td>
-                        <td>{{ staff.years_of_service }} years</td>
-                    </tr>
-                </table>
-            </div>
-            
-            <!-- templates/contract_detail.html -->
-            <div class="contract-section card">
-                <h3 class="section-title">
-                    <span class="material-symbols-rounded">description</span>
-                    Current Contract
-                </h3>
-                
-                {% if staff.current_contract %}
-                    <table class="info-table">
-                        <tr>
-                            <td>Contract Type:</td>
-                            <td>{{ staff.current_contract.get_contract_type_display }}</td>
-                        </tr>
-                        <tr>
-                            <td>Start Date:</td>
-                            <td>{{ staff.current_contract.start_date }}</td>
-                        </tr>
-                        <tr>
-                            <td>End Date:</td>
-                            <td>
-                                {% if staff.current_contract.end_date %}
-                                    {{ staff.current_contract.end_date }}
-                                    {% if staff.current_contract.is_expiring_soon %}
-                                        <span class="status-badge status-warning">
-                                            <span class="material-symbols-rounded">warning</span>
-                                            Expires in {{ staff.current_contract.days_until_expiry }} days
-                                        </span>
-                                    {% endif %}
-                                {% else %}
-                                    N/A (Permanent)
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Salary:</td>
-                            <td>KSh {{ staff.current_contract.salary }}</td>
-                        </tr>
-                        <tr>
-                            <td>Benefits:</td>
-                            <td>{{ staff.current_contract.benefits|default:"None" }}</td>
-                        </tr>
-                        <tr>
-                            <td>Status:</td>
-                            <td>
-                                <span class="status-badge 
-                                    {% if staff.current_contract.status == 'ACTIVE' %}status-active
-                                    {% elif staff.current_contract.status == 'EXPIRED' %}status-expired
-                                    {% else %}status-other{% endif %}">
-                                    <span class="material-symbols-rounded">
-                                        {% if staff.current_contract.status == 'ACTIVE' %}check_circle
-                                        {% elif staff.current_contract.status == 'EXPIRED' %}cancel
-                                        {% else %}info{% endif %}
-                                    </span>
-                                    {{ staff.current_contract.get_status_display }}
-                                </span>
-                            </td>
-                        </tr>
-                    </table>
-                    
-                    {% if staff.current_contract.document %}
-                        <a href="{{ staff.current_contract.document.url }}" class="btn btn-outline" target="_blank">
-                            <span class="material-symbols-rounded">visibility</span>
-                            View Contract Document {{ staff.current_contract.document.name }}
-                        </a>
-                    {% endif %}
-                    
-                    {% if staff.current_contract.is_expiring_soon %}
-                        <div class="contract-alert">
-                            <span class="material-symbols-rounded">warning</span>
-                            This contract expires in {{ staff.current_contract.days_until_expiry }} days.
-                            <a href="{% url 'core:contract_renew' staff.current_contract.id %}" class="btn btn-primary">
-                                <span class="material-symbols-rounded">autorenew</span>
-                                Renew Contract
-                            </a>
-                        </div>
-                    {% endif %}
-                {% else %}
-                    <p>No active contract found.</p>
-                    <a href="{% url 'core:contract_create' staff.unique_id %}" class="btn btn-primary">
-                        <span class="material-symbols-rounded">add</span>
-                        Create New Contract
-                    </a>
-                {% endif %}
-            </div>
+{% extends 'base1.html' %}
 
-            <!-- Contract History Section -->
-            <div class="contract-history-section card">
-                <h3 class="section-title">
-                    <span class="material-symbols-rounded">history</span>
-                    Contract History
-                </h3>
-                
-                {% if staff.contract_history %}
-                    <div class="contract-history">
-                        {% for contract in staff.contract_history %}
-                            <div class="contract-history-item {% if contract == staff.current_contract %}current{% endif %}">
-                                <div class="contract-header">
-                                    <span class="contract-type">{{ contract.get_contract_type_display }}</span>
-                                    <span class="contract-dates">{{ contract.start_date }} to 
-                                        {% if contract.end_date %}{{ contract.end_date }}{% else %}Present{% endif %}
-                                    </span>
-                                </div>
-                                <div class="contract-details">
-                                    <span class="job-title">{{ contract.job_title }}</span>
-                                    <span class="contract-status {{ contract.status|lower }}">
-                                        {{ contract.get_status_display }}
-                                    </span>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p>No contract history available.</p>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="footer">
-            <div>
-                <strong>Created:</strong> Aug 22, 2025 09:55
-            </div>
-            <div>
-                <strong>Last Updated:</strong> Aug 22, 2025 09:55
-            </div>
-        </div>
+{% block title %}Staff{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="container-fluid px-2 px-md-4">
+  <!-- Page Header with background -->
+  <div class="page-header min-height-300 border-radius-xl mt-4" 
+       style="background-image: url('https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?auto=format&fit=crop&w=1920&q=80');">
+    <span class="mask bg-gradient-dark opacity-6"></span>
+  </div>
+
+  <!-- Main Card -->
+  <div class="card card-body mx-2 mx-md-2 mt-n6">
+    <!-- Header Buttons -->
+    <div class="d-flex justify-content-between mb-4">
+      <button onclick="goToReferrer()" class="btn btn-outline-primary btn-sm">
+        <i class="material-symbols-rounded text-sm">arrow_back</i>
+        Back
+      </button>
+      <button class="btn btn-outline-primary btn-sm">
+        <i class="material-symbols-rounded text-sm">download</i>
+        Export PDF
+      </button>
     </div>
 
-    <script>
-        // Simple function to handle the upload button click
-        document.querySelector('.btn-outline').addEventListener('click', function() {
-            alert('Contract upload functionality would open a file dialog in a real application.');
-        });
-    </script>
-    <script>
-        function goToReferrer() {
-            const referrer = document.referrer;
-            if (referrer) {
-                window.location.href = referrer;
-            } else {
-                window.history.back(); // Fallback
-            }
-        }
-    </script>
-</body>
-</html>
+    <!-- Profile Header -->
+    <div class="row gx-4 mb-4">
+      <div class="col-auto">
+        <div class="avatar avatar-xl position-relative">
+          <span class="material-symbols-rounded text-xl bg-gradient-dark text-white d-flex align-items-center justify-content-center rounded-circle shadow-sm p-3">
+            person
+          </span>
+        </div>
+      </div>
+      <div class="col-auto my-auto">
+        <div class="h-100">
+          <h5 class="mb-1">{{ staff.full_name }}</h5>
+          <p class="mb-0 font-weight-normal text-sm">{{ staff.designation }}</p>
+          <span class="badge bg-gradient-success mt-2">
+            <i class="material-symbols-rounded text-sm align-middle">check_circle</i>
+            {{ staff.get_employment_status_display }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Sections -->
+    <div class="row">
+      <!-- Quick Information -->
+      <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card card-plain h-100">
+          <div class="card-header pb-0">
+            <h6>
+              <i class="material-symbols-rounded text-sm me-1">info</i>
+              Quick Information
+            </h6>
+          </div>
+          <div class="card-body p-3">
+            <ul class="list-group">
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Department:</strong> {{ staff.department.name }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Years of Service:</strong> {{ staff.years_of_service }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Employment Date:</strong> {{ staff.employment_date|date:"M d, Y" }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Status:</strong>
+                <span class="badge bg-gradient-success">
+                  <i class="material-symbols-rounded text-sm align-middle">check_circle</i>
+                  {{ staff.get_employment_status_display }}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emergency Contact -->
+      <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card card-plain h-100">
+          <div class="card-header pb-0">
+            <h6>
+              <i class="material-symbols-rounded text-sm me-1">emergency</i>
+              Emergency Contact
+            </h6>
+          </div>
+          <div class="card-body p-3">
+            <ul class="list-group">
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Name:</strong> {{ staff.emergency_contact_name }}</li>
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Phone:</strong> {{ staff.emergency_contact_phone }}</li>
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Relationship:</strong> {{ staff.emergency_contact_relationship }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Personal Information -->
+      <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card card-plain h-100">
+          <div class="card-header pb-0">
+            <h6>
+              <i class="material-symbols-rounded text-sm me-1">person</i>
+              Personal Information
+            </h6>
+          </div>
+          <div class="card-body p-3">
+            <ul class="list-group">
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Email:</strong> {{ staff.email }}</li>
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Phone:</strong> {{ staff.phone }}</li>
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Gender:</strong> {{ staff.get_gender_display }}</li>
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Date of Birth:</strong> {{ staff.date_of_birth|date:"M d, Y" }}</li>
+              <li class="list-group-item border-0 px-0 text-sm"><strong>National ID:</strong> {{ staff.national_id }}</li>
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Address:</strong> {{ staff.address }}</li>
+              <li class="list-group-item border-0 px-0 text-sm"><strong>KRA PIN:</strong> {{ staff.kra_pin|default:"Not provided" }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employment & Contract Info in another row -->
+    <div class="row">
+      <div class="col-xl-6 mb-4">
+        <!-- Employment Info -->
+        <div class="card card-plain h-100">
+          <div class="card-header pb-0">
+            <h6><i class="material-symbols-rounded text-sm me-1">work</i> Employment Information</h6>
+          </div>
+          <div class="card-body p-3">
+            <ul class="list-group">
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Position:</strong> {{ staff.position }}</li>
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Years of Service:</strong> {{ staff.years_of_service }}</li>
+              <li class="list-group-item border-0 px-0 text-sm"><strong>Employment Date:</strong> {{ staff.employment_date|date:"M d, Y" }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-6 mb-4">
+        <!-- Current Contract -->
+        <div class="card card-plain h-100">
+          <div class="card-header pb-0">
+            <h6><i class="material-symbols-rounded text-sm me-1">description</i> Current Contract</h6>
+          </div>
+          <div class="card-body p-3">
+            {% if staff.current_contract %}
+              <p><strong>Contract Type:</strong> {{ staff.current_contract.get_contract_type_display }}</p>
+              <p><strong>Salary:</strong> KSh {{ staff.current_contract.salary }}</p>
+              <p><strong>Status:</strong> {{ staff.current_contract.get_status_display }}</p>
+              {% if staff.current_contract.document %}
+                <a href="{{ staff.current_contract.document.url }}" class="btn btn-outline-primary btn-sm">
+                  <i class="material-symbols-rounded text-sm">visibility</i> View Contract
+                </a>
+              {% endif %}
+            {% else %}
+              <p>No active contract found.</p>
+              <a href="{% url 'core:contract_create' staff.unique_id %}" class="btn btn-primary btn-sm">
+                <i class="material-symbols-rounded text-sm">add</i> Create New Contract
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contract History -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card card-plain h-100">
+          <div class="card-header pb-0">
+            <h6><i class="material-symbols-rounded text-sm me-1">history</i> Contract History</h6>
+          </div>
+          <div class="card-body p-3">
+            {% if staff.contract_history %}
+              <ul class="list-group">
+                {% for contract in staff.contract_history %}
+                  <li class="list-group-item border-0 px-0 text-sm">
+                    {{ contract.get_contract_type_display }} ({{ contract.start_date }} - {{ contract.end_date|default:"Present" }})
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p>No contract history available.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
