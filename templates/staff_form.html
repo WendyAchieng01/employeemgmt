@@ -22,6 +22,7 @@
               {{ form.non_field_errors }}
             </div>
           {% endif %}
+
           <!-- Personal Information Section -->
           <div class="mb-5">
             <h6 class="mb-2 text-uppercase text-gray-500 text-xs font-weight-bolder opacity-80 flex items-center">
@@ -33,7 +34,7 @@
             <!-- First Name -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.first_name.label }}{% if form.first_name.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.first_name.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.first_name|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -57,7 +58,7 @@
             <!-- Last Name -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.last_name.label }}{% if form.last_name.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.last_name.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.last_name|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -69,7 +70,7 @@
             <!-- Email -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.email.label }}{% if form.email.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.email.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.email|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -81,7 +82,7 @@
             <!-- Phone -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.phone.label }}{% if form.phone.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.phone.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.phone|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -93,7 +94,7 @@
             <!-- Gender -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.gender.label }}{% if form.gender.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.gender.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.gender|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -105,7 +106,7 @@
             <!-- Date of Birth -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.date_of_birth.label }}{% if form.date_of_birth.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.date_of_birth.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.date_of_birth|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -117,7 +118,7 @@
             <!-- National ID -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.national_id.label }}{% if form.national_id.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.national_id.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.national_id|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -130,7 +131,7 @@
             <!-- Address -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.address.label }}{% if form.address.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.address.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.address|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -142,7 +143,7 @@
             <!-- KRA PIN -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.kra_pin.label }}{% if form.kra_pin.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.kra_pin.label }}
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.kra_pin|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -153,6 +154,7 @@
               <p class="mt-1 text-xs text-gray-500 opacity-70">Enter a valid KRA PIN (e.g., A123456789Z)</p>
             </div>
           </div>
+
           <!-- Employment Information Section -->
           <div class="mb-5 mt-5">
             <h6 class="mb-2 text-uppercase text-gray-500 text-xs font-weight-bolder opacity-80 flex items-center">
@@ -164,7 +166,7 @@
             <!-- Department -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.department.label }}{% if form.department.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.department.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.department|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -176,7 +178,7 @@
             <!-- Designation -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.designation.label }}{% if form.designation.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.designation.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.designation|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -188,7 +190,7 @@
             <!-- Employment Date -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.employment_date.label }}{% if form.employment_date.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.employment_date.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.employment_date|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -200,7 +202,7 @@
             <!-- Employment Status -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.employment_status.label }}{% if form.employment_status.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.employment_status.label }}
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.employment_status|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -212,7 +214,7 @@
             <!-- Employment Category -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.employment_category.label }}{% if form.employment_category.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.employment_category.label }}<span class="text-red-500">*</span>
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.employment_category|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -224,16 +226,29 @@
             <!-- Salary -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.salary.label }}{% if form.salary.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.salary.label }}
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
-                {{ form.salary|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
+                {{ form.salary|add_class:"form-control bg-white border gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
               </div>
               {% for error in form.salary.errors %}
                 <p class="mt-1 text-xs text-red-600">{{ error }}</p>
               {% endfor %}
             </div>
+            <!-- Is Admin -->
+            <div class="col-md-6 mb-4">
+              <div class="form-check">
+                <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
+                  {{ form.is_admin }} <!-- Checkbox input directly -->
+                  {{ form.is_admin.label }}
+                </label>
+                {% for error in form.is_admin.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+                {% endfor %}
+              </div>
+            </div>
           </div>
+
           <!-- Emergency Contact Section -->
           <div class="mb-5 mt-5">
             <h6 class="mb-2 text-uppercase text-gray-500 text-xs font-weight-bolder opacity-80 flex items-center">
@@ -245,7 +260,7 @@
             <!-- Emergency Contact Name -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.emergency_contact_name.label }}{% if form.emergency_contact_name.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.emergency_contact_name.label }}
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.emergency_contact_name|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -257,7 +272,7 @@
             <!-- Emergency Contact Phone -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.emergency_contact_phone.label }}{% if form.emergency_contact_phone.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.emergency_contact_phone.label }}
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.emergency_contact_phone|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -269,7 +284,7 @@
             <!-- Emergency Contact Relationship -->
             <div class="col-md-6 mb-4">
               <label class="text-sm text-capitalize font-weight-bolder text-gray-700 opacity-90 mb-2">
-                {{ form.emergency_contact_relationship.label }}{% if form.emergency_contact_relationship.field.required %}<span class="text-red-500">*</span>{% endif %}
+                {{ form.emergency_contact_relationship.label }}
               </label>
               <div class="input-group input-group-outline focus:ring-2 focus:ring-purple-200 rounded-lg">
                 {{ form.emergency_contact_relationship|add_class:"form-control bg-white border-gray-300 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200" }}
@@ -279,6 +294,7 @@
               {% endfor %}
             </div>
           </div>
+
           <!-- Submit Button -->
           <div class="mt-5 d-flex justify-content-end">
             <button type="submit" class="btn btn-success">

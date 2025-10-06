@@ -1,6 +1,6 @@
 {% extends 'base1.html' %}
 
-{% block title %}Staff{% endblock %}
+{% block title %}Staff Dashboard{% endblock %}
 
 {% block content %}
 {% load static %}
@@ -61,6 +61,9 @@
           <div class="card-body p-3">
             <ul class="list-group">
               <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Unique ID:</strong> {{ staff.unique_id }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
                 <strong>Department:</strong> {{ staff.department.name }}
               </li>
               <li class="list-group-item border-0 px-0 text-sm">
@@ -92,9 +95,15 @@
           </div>
           <div class="card-body p-3">
             <ul class="list-group">
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Name:</strong> {{ staff.emergency_contact_name }}</li>
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Phone:</strong> {{ staff.emergency_contact_phone }}</li>
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Relationship:</strong> {{ staff.emergency_contact_relationship }}</li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Name:</strong> {{ staff.emergency_contact_name|default:"Not provided" }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Phone:</strong> {{ staff.emergency_contact_phone|default:"Not provided" }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Relationship:</strong> {{ staff.emergency_contact_relationship|default:"Not provided" }}
+              </li>
             </ul>
           </div>
         </div>
@@ -111,32 +120,64 @@
           </div>
           <div class="card-body p-3">
             <ul class="list-group">
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Email:</strong> {{ staff.email }}</li>
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Phone:</strong> {{ staff.phone }}</li>
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Gender:</strong> {{ staff.get_gender_display }}</li>
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Date of Birth:</strong> {{ staff.date_of_birth|date:"M d, Y" }}</li>
-              <li class="list-group-item border-0 px-0 text-sm"><strong>National ID:</strong> {{ staff.national_id }}</li>
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Address:</strong> {{ staff.address }}</li>
-              <li class="list-group-item border-0 px-0 text-sm"><strong>KRA PIN:</strong> {{ staff.kra_pin|default:"Not provided" }}</li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>User Account:</strong> {{ staff.user.username|default:"Not linked" }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Middle Name:</strong> {{ staff.middle_name|default:"Not provided" }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Email:</strong> {{ staff.email }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Phone:</strong> {{ staff.phone }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Gender:</strong> {{ staff.get_gender_display }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Date of Birth:</strong> {{ staff.date_of_birth|date:"M d, Y" }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>National ID:</strong> {{ staff.national_id }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Address:</strong> {{ staff.address }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>KRA PIN:</strong> {{ staff.kra_pin|default:"Not provided" }}
+              </li>
             </ul>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Employment & Contract Info in another row -->
+    <!-- Employment & Contract Info -->
     <div class="row">
       <div class="col-xl-6 mb-4">
-        <!-- Employment Info -->
+        <!-- Employment Information -->
         <div class="card card-plain h-100">
           <div class="card-header pb-0">
-            <h6><i class="material-symbols-rounded text-sm me-1">work</i> Employment Information</h6>
+            <h6>
+              <i class="material-symbols-rounded text-sm me-1">work</i>
+              Employment Information
+            </h6>
           </div>
           <div class="card-body p-3">
             <ul class="list-group">
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Position:</strong> {{ staff.position }}</li>
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Years of Service:</strong> {{ staff.years_of_service }}</li>
-              <li class="list-group-item border-0 px-0 text-sm"><strong>Employment Date:</strong> {{ staff.employment_date|date:"M d, Y" }}</li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Designation:</strong> {{ staff.designation }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Employment Category:</strong> {{ staff.get_employment_category_display }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Salary:</strong> KSh {{ staff.salary|default:"Not provided" }}
+              </li>
+              <li class="list-group-item border-0 px-0 text-sm">
+                <strong>Admin Status:</strong> {{ staff.is_admin|yesno:"Admin,Non-Admin" }}
+              </li>
             </ul>
           </div>
         </div>
@@ -146,16 +187,45 @@
         <!-- Current Contract -->
         <div class="card card-plain h-100">
           <div class="card-header pb-0">
-            <h6><i class="material-symbols-rounded text-sm me-1">description</i> Current Contract</h6>
+            <h6>
+              <i class="material-symbols-rounded text-sm me-1">description</i>
+              Current Contract
+            </h6>
           </div>
           <div class="card-body p-3">
             {% if staff.current_contract %}
-              <p><strong>Contract Type:</strong> {{ staff.current_contract.get_contract_type_display }}</p>
-              <p><strong>Salary:</strong> KSh {{ staff.current_contract.salary }}</p>
-              <p><strong>Status:</strong> {{ staff.current_contract.get_status_display }}</p>
+              <ul class="list-group">
+                <li class="list-group-item border-0 px-0 text-sm">
+                  <strong>Contract Type:</strong> {{ staff.current_contract.get_contract_type_display }}
+                </li>
+                <li class="list-group-item border-0 px-0 text-sm">
+                  <strong>Start Date:</strong> {{ staff.current_contract.start_date|date:"M d, Y" }}
+                </li>
+                <li class="list-group-item border-0 px-0 text-sm">
+                  <strong>End Date:</strong> {{ staff.current_contract.end_date|date:"M d, Y"|default:"Present" }}
+                </li>
+                <li class="list-group-item border-0 px-0 text-sm">
+                  <strong>Salary:</strong> KSh {{ staff.current_contract.salary }}
+                </li>
+                <li class="list-group-item border-0 px-0 text-sm">
+                  <strong>Job Title:</strong> {{ staff.current_contract.job_title }}
+                </li>
+                <li class="list-group-item border-0 px-0 text-sm">
+                  <strong>Department:</strong> {{ staff.current_contract.department.name }}
+                </li>
+                <li class="list-group-item border-0 px-0 text-sm">
+                  <strong>Benefits:</strong> {{ staff.current_contract.benefits|default:"Not provided" }}
+                </li>
+                <li class="list-group-item border-0 px-0 text-sm">
+                  <strong>Status:</strong> {{ staff.current_contract.get_status_display }}
+                </li>
+                <li class="list-group-item border-0 px-0 text-sm">
+                  <strong>Notes:</strong> {{ staff.current_contract.notes|default:"Not provided" }}
+                </li>
+              </ul>
               {% if staff.current_contract.document %}
                 <a href="{{ staff.current_contract.document.url }}" class="btn btn-outline-primary btn-sm">
-                  <i class="material-symbols-rounded text-sm">visibility</i> View Contract
+                  <i class="material-symbols-rounded text-sm">visibility</i> View {{ staff.first_name }}'s Documents
                 </a>
               {% endif %}
             {% else %}
@@ -174,14 +244,18 @@
       <div class="col-12">
         <div class="card card-plain h-100">
           <div class="card-header pb-0">
-            <h6><i class="material-symbols-rounded text-sm me-1">history</i> Contract History</h6>
+            <h6>
+              <i class="material-symbols-rounded text-sm me-1">history</i>
+              Contract History
+            </h6>
           </div>
           <div class="card-body p-3">
             {% if staff.contract_history %}
               <ul class="list-group">
                 {% for contract in staff.contract_history %}
                   <li class="list-group-item border-0 px-0 text-sm">
-                    {{ contract.get_contract_type_display }} ({{ contract.start_date }} - {{ contract.end_date|default:"Present" }})
+                    {{ contract.get_contract_type_display }} ({{ contract.start_date|date:"M d, Y" }} - {{ contract.end_date|date:"M d, Y"|default:"Present" }})
+                    - {{ contract.job_title }} in {{ contract.department.name }}
                   </li>
                 {% endfor %}
               </ul>
