@@ -1,0 +1,357 @@
+{% extends 'base1.html' %}
+{% load static %}
+
+{% block title %}Contract Details - {{ contract.staff.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-0">Contract Details</h5>
+                            <p class="text-sm mb-0">{{ contract.staff.full_name }} - {{ contract.job_title }}</p>
+                        </div>
+                        <div>
+                            <a href="{% url 'core:staff_detail' contract.staff.unique_id %}" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fas fa-user me-1"></i> View Staff
+                            </a>
+                            <a href="{% url 'core:contract_update' contract.id %}" class="btn btn-sm btn-primary me-2">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>
+                            {% if contract.document %}
+                            <a href="{{ contract.document.url }}" target="_blank" class="btn btn-sm btn-info me-2">
+                                <i class="fas fa-download me-1"></i> Download
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'core:contracts' %}" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Alert -->
+    {% if contract.is_expired %}
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Contract Expired!</strong> This contract has expired.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+    {% elif contract.is_expiring_soon %}
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>Expiring Soon!</strong> This contract will expire in {{ contract.days_until_expiry }} days.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Contract Information Card -->
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Contract Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Contract ID</label>
+                            <p class="text-sm font-weight-bold mb-0">{{ contract.id }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Contract Type</label>
+                            <p class="text-sm font-weight-bold mb-0">
+                                <span class="badge badge-sm bg-gradient-info">{{ contract.get_contract_type_display }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Start Date</label>
+                            <p class="text-sm font-weight-bold mb-0">{{ contract.start_date|date:"F d, Y" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">End Date</label>
+                            <p class="text-sm font-weight-bold mb-0">
+                                {% if contract.end_date %}
+                                    {{ contract.end_date|date:"F d, Y" }}
+                                {% else %}
+                                    <span class="text-muted">Permanent (No end date)</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Duration</label>
+                            <p class="text-sm font-weight-bold mb-0">{{ contract.duration }} days</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Status</label>
+                            <p class="text-sm font-weight-bold mb-0">
+                                {% if contract.status == 'ACTIVE' %}
+                                    <span class="badge badge-sm bg-gradient-success">{{ contract.get_status_display }}</span>
+                                {% elif contract.status == 'EXPIRED' %}
+                                    <span class="badge badge-sm bg-gradient-danger">{{ contract.get_status_display }}</span>
+                                {% elif contract.status == 'PENDING' %}
+                                    <span class="badge badge-sm bg-gradient-warning">{{ contract.get_status_display }}</span>
+                                {% elif contract.status == 'RENEWED' %}
+                                    <span class="badge badge-sm bg-gradient-info">{{ contract.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge badge-sm bg-gradient-secondary">{{ contract.get_status_display }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employment Details Card -->
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Employment Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Job Title</label>
+                            <p class="text-sm font-weight-bold mb-0">{{ contract.job_title }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Department</label>
+                            <p class="text-sm font-weight-bold mb-0">
+                                {% if contract.department %}
+                                    {{ contract.department.name }} ({{ contract.department.code }})
+                                {% else %}
+                                    <span class="text-muted">Not specified</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Salary</label>
+                            <p class="text-sm font-weight-bold mb-0">KES {{ contract.salary|floatformat:2 }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Renewal Reminder</label>
+                            <p class="text-sm font-weight-bold mb-0">
+                                {% if contract.renewal_reminder_sent %}
+                                    <span class="badge badge-sm bg-gradient-success">Sent</span>
+                                {% else %}
+                                    <span class="badge badge-sm bg-gradient-secondary">Not Sent</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% if contract.benefits %}
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Benefits</label>
+                            <p class="text-sm mb-0">{{ contract.benefits|linebreaks }}</p>
+                        </div>
+                        {% endif %}
+                        {% if contract.notes %}
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-xs text-uppercase font-weight-bolder opacity-7">Notes</label>
+                            <p class="text-sm mb-0">{{ contract.notes|linebreaks }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Renewal History Card -->
+            {% if contract.renewals.exists %}
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Renewal History</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Renewal Date</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Previous End Date</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">New End Date</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Renewed By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for renewal in contract.renewals.all %}
+                                <tr>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ renewal.renewal_date|date:"M d, Y" }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ renewal.previous_end_date|date:"M d, Y" }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ renewal.new_end_date|date:"M d, Y" }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">
+                                            {% if renewal.renewed_by %}
+                                                {{ renewal.renewed_by.get_full_name }}
+                                            {% else %}
+                                                <span class="text-muted">Unknown</span>
+                                            {% endif %}
+                                        </p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Staff Summary Card -->
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Staff Summary</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-xxl position-relative mb-3">
+                        <div class="avatar avatar-xxl bg-gradient-primary d-flex align-items-center justify-content-center rounded-circle">
+                            <span class="text-white text-lg">{{ contract.staff.first_name.0 }}{{ contract.staff.last_name.0 }}</span>
+                        </div>
+                    </div>
+                    <h5 class="mb-0">{{ contract.staff.full_name }}</h5>
+                    <p class="text-sm text-muted mb-3">{{ contract.staff.unique_id }}</p>
+                    
+                    <div class="text-start">
+                        <div class="mb-2">
+                            <span class="text-xs text-uppercase font-weight-bolder opacity-7">Email:</span>
+                            <p class="text-sm mb-0">{{ contract.staff.email }}</p>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs text-uppercase font-weight-bolder opacity-7">Phone:</span>
+                            <p class="text-sm mb-0">{{ contract.staff.phone }}</p>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs text-uppercase font-weight-bolder opacity-7">Department:</span>
+                            <p class="text-sm mb-0">{{ contract.staff.department.name }}</p>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs text-uppercase font-weight-bolder opacity-7">Designation:</span>
+                            <p class="text-sm mb-0">{{ contract.staff.designation }}</p>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs text-uppercase font-weight-bolder opacity-7">Employment Status:</span>
+                            <p class="text-sm mb-0">
+                                <span class="badge badge-sm bg-gradient-success">{{ contract.staff.get_employment_status_display }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Card -->
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Quick Stats</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-xs font-weight-bold">Years of Service</span>
+                        <span class="text-xs font-weight-bold">{{ contract.staff.years_of_service }} years</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-xs font-weight-bold">Total Contracts</span>
+                        <span class="text-xs font-weight-bold">{{ contract.staff.contracts.count }}</span>
+                    </div>
+                    {% if contract.days_until_expiry %}
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-xs font-weight-bold">Days Until Expiry</span>
+                        <span class="text-xs font-weight-bold 
+                            {% if contract.days_until_expiry < 0 %}text-danger
+                            {% elif contract.days_until_expiry < 30 %}text-warning
+                            {% else %}text-success{% endif %}">
+                            {{ contract.days_until_expiry }} days
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Contract Document Card -->
+            {% if contract.document %}
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Contract Document</h6>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                    <p class="text-sm mb-3">Contract document available</p>
+                    <a href="{{ contract.document.url }}" target="_blank" class="btn btn-sm btn-primary w-100">
+                        <i class="fas fa-download me-2"></i> Download Document
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Contract Document</h6>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-file-excel fa-3x text-muted mb-3"></i>
+                    <p class="text-sm text-muted mb-0">No document uploaded</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Metadata Card -->
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6>Metadata</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="text-xs text-uppercase font-weight-bolder opacity-7">Created At:</span>
+                        <p class="text-xs mb-0">{{ contract.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-uppercase font-weight-bolder opacity-7">Last Updated:</span>
+                        <p class="text-xs mb-0">{{ contract.updated_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Section -->
+    {% if contract.status == 'ACTIVE' and contract.is_expiring_soon %}
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card bg-gradient-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-white mb-0">Contract Renewal Required</h6>
+                            <p class="text-white text-sm mb-0">This contract is expiring soon. Consider initiating the renewal process.</p>
+                        </div>
+                        <a href="{% url 'core:contract_renew' contract.id %}" class="btn btn-white btn-sm">
+                            <i class="fas fa-redo me-2"></i> Renew Contract
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

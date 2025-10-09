@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 
-app_name = 'core' 
+app_name = 'core'
 
 urlpatterns = [
     path('', views.staff_list, name='staff_list'),
@@ -13,12 +13,12 @@ urlpatterns = [
     path('department/<int:dept_id>/', views.department_staff, name='department_staff'),
     path('api/staff/', views.staff_api, name='staff_api'),
     path('staff/<str:unique_id>/delete/', views.delete_staff, name='delete_staff'),
-    path('staff/<str:unique_id>/contract/create/', views.ContractCreateView.as_view(), name='contract_create'),
+    path('staff/<str:unique_id>/contract/create/', views.contract_create, name='contract_create'),
     path('contracts/', views.contracts, name='contracts'),
-    path('contract/<uuid:pk>/renew/', views.ContractRenewView.as_view(), name='contract_renew'),
-    path('contract/<uuid:pk>/', views.ContractDetailView.as_view(), name='contract_detail'),
-    path('contract/<uuid:pk>/update/', views.ContractUpdateView.as_view(), name='contract_update'),
-    path('contract/<uuid:pk>/delete/', views.ContractDeleteView.as_view(), name='contract_delete'),
+    path('contract/<str:unique_id>/renew/', views.contract_renew, name='contract_renew'),
+    path('contract/<str:unique_id>/', views.contract_detail, name='contract_detail'),
+    path('contract/<str:unique_id>/update/', views.contract_update, name='contract_update'),
+    path('contract/<str:unique_id>/delete/', views.contract_delete, name='contract_delete'),
     path('billing/', views.billing, name='billing'),
     path('about/', views.about, name='about'),
 ]

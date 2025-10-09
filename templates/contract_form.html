@@ -134,9 +134,15 @@
                             </div>
                         </div>
                         <div class="mt-5 d-flex justify-content-end">
-                            <a href="{% url 'core:staff_detail' unique_id=staff.unique_id %}" class="btn btn-outline-secondary me-2">
+                        {% if staff and staff.unique_id %}
+                            <a href="{% url 'core:contracts' %}" class="btn btn-outline-secondary me-2">
                                 <i class="material-symbols-rounded me-2">close</i> Cancel
                             </a>
+                        {% else %}
+                            <a href="{% url 'core:contracts' %}" class="btn btn-outline-secondary me-2">
+                                <i class="material-symbols-rounded me-2">close</i> Cancel
+                            </a>
+                        {% endif %}
                             <button type="submit" class="btn btn-success">
                                 <i class="material-symbols-rounded me-2">save</i> {% if object %}Update{% else %}Create{% endif %} Contract
                             </button>
