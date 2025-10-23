@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Department, Staff, Contract, ContractRenewal
+from .models import Department, Staff, Contract, ContractRenewal, Deduction, ContractDeduction
+from django.utils.html import format_html
 
 
 @admin.register(Department)
@@ -13,9 +14,58 @@ class DepartmentAdmin(admin.ModelAdmin):
         return obj.staff_members.count()
     staff_count.short_description = 'Staff Count'
 
-from django.contrib import admin
-from .models import Staff
+@admin.register(Deduction)
+class DeductionAdmin(admin.ModelAdmin):
+    list_display = [
+        'name', 'percentage', 'deduction_type', 'is_active', 
+        'min_salary_threshold', 'max_amount', 'created_at'
+    ]
+    list_filter = ['deduction_type', 'is_active']
+    search_fields = ['name', 'description']
+    list_editable = ['is_active']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'percentage', 'deduction_type')
+        }),
+        ('Rules', {
+            'fields': ('min_salary_threshold', 'max_amount', 'is_active')
+        }),
+        ('Description', {
+            'fields': ('description',)
+        }),
+    )
+    
+    # Show warning for mandatory deductions
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        if object_id:
+            deduction = Deduction.objects.get(pk=object_id)
+            if deduction.deduction_type == 'MANDATORY':
+                extra_context['mandatory_warning'] = (
+                    "⚠️ MANDATORY deductions apply to ALL staff automatically. "
+                    "No contract selection needed."
+                )
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
+@admin.register(ContractDeduction)
+class ContractDeductionAdmin(admin.ModelAdmin):
+    list_display = ['contract', 'deduction', 'override_type', 'amount_display', 'is_active']
+    list_filter = ['is_active']
+    search_fields = ['contract__staff__first_name', 'deduction__name']
+    
+    def override_type(self, obj):
+        if obj.custom_percentage:
+            return f"{obj.custom_percentage}%"
+        elif obj.fixed_amount:
+            return f"KSh {obj.fixed_amount}"
+        return "None"
+    override_type.short_description = 'Override'
+    
+    def amount_display(self, obj):
+        return f"KSh {obj.calculate_amount(obj.contract.salary):,.2f}"
+    amount_display.short_description = 'Calculated Amount'
+    
 # Add a custom method for full_name
 class StaffAdmin(admin.ModelAdmin):
     list_display = [
@@ -78,13 +128,20 @@ class StaffAdmin(admin.ModelAdmin):
 
 admin.site.register(Staff, StaffAdmin)
 
+class ContractDeductionInline(admin.TabularInline):
+    model = ContractDeduction
+    extra = 0
+    fields = ['deduction', 'custom_percentage', 'fixed_amount', 'is_active']
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('deduction')
 
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
-    list_display = ['staff', 'job_title', 'contract_type', 'start_date', 'end_date', 'status', 'is_expiring_soon']
+    list_display = ['staff', 'job_title', 'contract_type', 'start_date', 'end_date', 'status', 'is_expiring_soon', 'total_deductions_amount', 'net_salary']
     list_filter = ['status', 'contract_type', 'department', 'start_date']
     search_fields = ['staff__full_name', 'job_title', 'department__name']
-    readonly_fields = ['created_at', 'updated_at', 'days_until_expiry', 'is_expired']
+    readonly_fields = ['created_at', 'updated_at', 'days_until_expiry', 'is_expired', 'total_deductions_amount', 'net_salary']
     actions = ['send_renewal_reminders', 'mark_as_renewed']
     
     fieldsets = (
@@ -101,7 +158,25 @@ class ContractAdmin(admin.ModelAdmin):
             'fields': ('created_at', 'updated_at', 'renewal_reminder_sent'),
             'classes': ('collapse',)
         }),
+        ('Optional Deductions', {
+            'fields': (),
+            'description': format_html(
+                '<strong>Mandatory deductions (PAYE, NSSF, NHIF) apply automatically.</strong><br>'
+                'Select only voluntary or loan deductions below:'
+            )
+        }),
+        ('Calculations (Read-only)', {
+            'fields': ('total_deductions_amount', 'net_salary')
+        }),
     )
+
+    inlines = [ContractDeductionInline]
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # Add JavaScript for radio button toggle
+        form.base_fields['total_deductions_amount'].widget.attrs['readonly'] = True
+        return form
     
     def is_expiring_soon(self, obj):
         return obj.is_expiring_soon
@@ -128,6 +203,30 @@ class ContractAdmin(admin.ModelAdmin):
         self.message_user(request, f"{updated} contracts marked as renewed")
     mark_as_renewed.short_description = "Mark selected as renewed"
 
+   # Filter optional deductions choices to exclude mandatory
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "optional_deductions":
+            kwargs["queryset"] = Deduction.objects.filter(
+                deduction_type__in=['VOLUNTARY', 'LOAN']
+            )
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+    
+    def total_deductions_amount(self, obj):
+        return format_html(
+            '<strong>KSh {}</strong> '
+            '<small class="text-muted">(Mandatory: KSh {}) + Optional: KSh {})</small>',
+            f"{obj.total_deductions_amount:,.2f}",
+            f"{sum(d.calculate_amount(obj.salary) for d in obj.mandatory_deductions):,.2f}",
+            f"{obj.total_deductions_amount - sum(d.calculate_amount(obj.salary) for d in obj.mandatory_deductions):,.2f}"
+        )
+    
+    def net_salary(self, obj):
+        return format_html(
+            '<strong style="color: green;">KSh {}</strong>', 
+            f"{obj.net_salary:,.2f}"
+        )
+
+
 
 @admin.register(ContractRenewal)
 class ContractRenewalAdmin(admin.ModelAdmin):
@@ -139,3 +238,7 @@ class ContractRenewalAdmin(admin.ModelAdmin):
         if not obj.renewed_by:
             obj.renewed_by = request.user
         super().save_model(request, obj, form, change)
+
+
+class Media:
+    js = ('js/contract_deduction.js',)

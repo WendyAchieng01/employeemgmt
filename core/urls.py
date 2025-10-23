@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import ContractCreateView
 
 app_name = 'core'
 
@@ -13,7 +14,7 @@ urlpatterns = [
     path('department/<int:dept_id>/', views.department_staff, name='department_staff'),
     path('api/staff/', views.staff_api, name='staff_api'),
     path('staff/<str:unique_id>/delete/', views.delete_staff, name='delete_staff'),
-    path('staff/<str:unique_id>/contract/create/', views.contract_create, name='contract_create'),
+    path('staff/<str:unique_id>/contract/create/', ContractCreateView.as_view(), name='contract_create'),
     path('contracts/', views.contracts, name='contracts'),
     path('contract/<str:unique_id>/renew/', views.contract_renew, name='contract_renew'),
     path('contract/<str:unique_id>/', views.contract_detail, name='contract_detail'),

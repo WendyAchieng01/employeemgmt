@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.db.models import Q, Count
 from django.http import JsonResponse
 from .models import Staff, Department, Contract, ContractRenewal
-from .forms import StaffForm, ContractForm
+from .forms import StaffForm, ContractForm, ContractDeductionFormSet
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -14,6 +14,8 @@ import logging
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.http import require_http_methods
+from django.views.generic import CreateView, UpdateView
+from django.urls import reverse_lazy
 
 def is_admin(user):
     return user.groups.filter(name='Admin').exists()
@@ -282,27 +284,73 @@ def delete_staff(request, staff_id):
     
 logger = logging.getLogger(__name__)
 
-def contract_create(request, unique_id):
-    staff = get_object_or_404(Staff, unique_id=unique_id)
+class ContractCreateView(CreateView):
+    model = Contract
+    form_class = ContractForm
+    template_name = 'contract_form.html'
     
-    if request.method == 'POST':
-        form = ContractForm(request.POST)
-        if form.is_valid():
-            contract = form.save(commit=False)
-            contract.staff = staff
-            contract.save()
-            messages.success(request, f'Contract created successfully for {contract.staff.full_name}')
-            return redirect('core:staff_detail', unique_id=staff.unique_id)
-    else:
-        initial = {
-            'staff': staff,
-            'department': staff.department,
-            'job_title': staff.designation
-        }
-        form = ContractForm(initial=initial)
+    def get_staff_object(self):
+        """Get staff by unique_id"""
+        unique_id = self.kwargs.get('unique_id')
+        staff = get_object_or_404(Staff, unique_id=unique_id)
+        return staff
     
-    context = {'form': form, 'staff': staff}
-    return render(request, 'contract_form.html', context)
+    def get_initial(self):
+        initial = super().get_initial()
+        staff = self.get_staff_object()
+        initial['staff'] = staff
+        initial['department'] = staff.department
+        initial['job_title'] = staff.designation
+        return initial
+    
+    def get_context_data(self, **kwargs):
+        """INTEGRATE FORMSET HERE - keeps ALL your existing logic"""
+        context = super().get_context_data(**kwargs)
+        
+        # YOUR EXISTING LOGIC - UNCHANGED
+        context['staff'] = self.get_staff_object()
+        
+        # ADD FORMSET INTEGRATION
+        if self.request.POST:
+            context['deduction_formset'] = ContractDeductionFormSet(
+                self.request.POST, 
+                instance=self.object  # Will be set after form.save()
+            )
+        else:
+            context['deduction_formset'] = ContractDeductionFormSet(
+                instance=self.object  # None initially, set after save
+            )
+        
+        return context
+    
+    def form_valid(self, form):
+        """SAVE CONTRACT FIRST, THEN FORMSET - keeps your messages"""
+        # YOUR EXISTING LOGIC - UNCHANGED
+        form.instance.staff = self.get_staff_object()
+        
+        # SAVE CONTRACT FIRST
+        self.object = form.save()
+        
+        # NOW SAVE FORMSET with saved contract instance
+        formset = self.get_context_data()['deduction_formset']
+        formset.instance = self.object  # Link to saved contract
+        if formset.is_valid():
+            formset.save()  # Save all deduction overrides
+        
+        # YOUR EXISTING SUCCESS MESSAGE - UNCHANGED
+        messages.success(
+            self.request, 
+            f'Contract created successfully for {form.instance.staff.full_name}'
+        )
+        
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        """YOUR EXISTING LOGIC - UNCHANGED"""
+        return reverse_lazy(
+            'core:staff_detail', 
+            kwargs={'unique_id': self.object.staff.unique_id}
+        )
 
 @login_required
 def contract_renew(request, unique_id):
