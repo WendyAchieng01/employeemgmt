@@ -19,6 +19,17 @@
                             <a href="{% url 'core:staff_detail' contract.staff.unique_id %}" class="btn btn-sm btn-outline-primary me-2">
                                 <i class="fas fa-user me-1"></i> View Staff
                             </a>
+                            {% if contract.payroll_contract.all %}
+                            <a href="{% url 'payroll:payroll_detail' contract.staff.unique_id %}"
+                                class="btn btn-sm btn-outline-primary me-2">
+                                View Latest Payslip
+                            </a>
+                            {% else %}
+                            <a href="{% url 'payroll:payroll_create' contract.staff.unique_id %}"
+                                class="btn btn-sm btn-outline-primary me-2">
+                                Create Payslip
+                            </a>
+                            {% endif %}
                             <a href="{% url 'core:contract_update' contract.id %}" class="btn btn-sm btn-primary me-2">
                                 <i class="fas fa-edit me-1"></i> Edit
                             </a>

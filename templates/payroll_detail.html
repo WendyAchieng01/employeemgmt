@@ -1,0 +1,219 @@
+{% extends 'base1.html' %}
+{% load static %}
+
+{% block title %}Payslip - {{ payroll.staff_name }} - {{ payroll.pay_period_start|date:"M Y" }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Card -->
+            <div class="card shadow-lg mb-4 border-0">
+                <div class="card-header bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h2 class="mb-1 text-white font-weight-bolder">
+                                <i class="material-symbols-rounded align-middle me-2">receipt_long</i>
+                                PAYSLIP
+                            </h2>
+                            <p class="mb-0 opacity-90">
+                                {{ payroll.pay_period_start|date:"F d, Y" }} - {{ payroll.pay_period_end|date:"F d, Y" }}
+                            </p>
+                        </div>
+                        <div class="col-auto text-end">
+                            <div class="badge bg-white text-indigo-600 fs-6 px-3 py-2">
+                                #{{ payroll.id|slice:":8"|upper }}
+                            </div>
+                            <div class="mt-2">
+                                <small class="opacity-80">Generated: {{ payroll.generated_at|date:"M d, Y h:i A" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company & Employee Info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-indigo-600 mb-3">
+                                <i class="material-symbols-rounded me-2">business</i>Employer
+                            </h5>
+                            <p class="mb-1"><strong>Mama Lucy Kibaki Hospital.</strong></p>
+                            <p class="mb-1 text-muted">P.O. Box 1234-00100, Nairobi</p>
+                            <p class="mb-1 text-muted">KRA PIN: P051234567A</p>
+                            <p class="mb-0 text-muted">Tel: +254 700 000 000</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-success mb-3">
+                                <i class="material-symbols-rounded me-2">person</i>Employee
+                            </h5>
+                            <p class="mb-1"><strong>{{ payroll.staff_name }}</strong></p>
+                            <p class="mb-1 text-muted">ID: {{ payroll.staff.unique_id }}</p>
+                            <p class="mb-1 text-muted">National ID: {{ payroll.staff_national_id }}</p>
+                            <p class="mb-1 text-muted">KRA PIN: {{ payroll.staff_kra_pin|default:"N/A" }}</p>
+                            <p class="mb-0 text-muted">Position: {{ payroll.contract.job_title }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Earnings & Deductions -->
+            <div class="row mb-4">
+                <!-- Earnings -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0 text-success">
+                                <i class="material-symbols-rounded me-2">trending_up</i>Earnings
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm table-borderless mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td class="text-muted">Basic Salary</td>
+                                        <td class="text-end fw-bold">KSh {{ payroll.gross_salary|floatformat:2 }}</td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td class="text-success fw-bold">Total Earnings</td>
+                                        <td class="text-end text-success fw-bold h5">KSh {{ payroll.gross_salary|floatformat:2 }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deductions -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0 text-danger">
+                                <i class="material-symbols-rounded me-2">trending_down</i>Deductions
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm table-borderless mb-0">
+                                <tbody>
+                                    {% comment %} Mandatory Deductions {% endcomment %}
+                                    {% with mandatory_total=0 %}
+                                    {% for deduction in mandatory_deductions %}
+                                        {% if deduction.amount > 0 %}
+                                        <tr>
+                                            <td class="text-muted">{{ deduction.name }}</td>
+                                            <td class="text-end">KSh {{ deduction.amount|floatformat:2 }}</td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endwith %}
+
+                                    {% comment %} Optional Deductions {% endcomment %}
+                                    {% for cd in contract_deductions %}
+                                        {% if cd.amount > 0 %}
+                                        <tr>
+                                            <td class="text-muted">{{ cd.deduction.name }} 
+                                                <small class="text-info">
+                                                    {% if cd.custom_percentage %}({{ cd.custom_percentage }}%){% endif %}
+                                                    {% if cd.fixed_amount %}(KSh {{ cd.fixed_amount }}){% endif %}
+                                                </small>
+                                            </td>
+                                            <td class="text-end">KSh {{ cd.amount|floatformat:2 }}</td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    <tr class="border-top">
+                                        <td class="text-danger fw-bold">Total Deductions</td>
+                                        <td class="text-end text-danger fw-bold h5">KSh {{ payroll.total_deductions|floatformat:2 }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Net Pay Summary -->
+            <div class="card border-0 shadow-lg mb-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                <div class="card-body text-center py-4">
+                    <h4 class="mb-2">Net Pay</h4>
+                    <h1 class="display-4 fw-bold mb-0">KSh {{ payroll.net_salary|floatformat:2 }}</h1>
+                    <p class="mb-0 opacity-90 mt-2">
+                        Paid via {{ payroll.bank_name }} - {{ payroll.account_no }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Banking Details -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="material-symbols-rounded me-2">account_balance</i>Payment Details
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3"><strong>Bank:</strong> {{ payroll.bank_name }}</div>
+                        <div class="col-md-3"><strong>Branch:</strong> {{ payroll.bank_branch }}</div>
+                        <div class="col-md-3"><strong>Branch Code:</strong> {{ payroll.bank_branch_code }}</div>
+                        <div class="col-md-3"><strong>Account:</strong> {{ payroll.account_no }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between gap-3">
+                <a href="{% url 'core:staff_detail' unique_id=payroll.staff.unique_id %}" 
+                   class="btn btn-outline-secondary px-4">
+                    <i class="material-symbols-rounded me-2">arrow_back</i>Back to Profile
+                </a>
+                <div>
+                    <button onclick="window.print()" class="btn btn-outline-primary me-2 px-4">
+                        <i class="material-symbols-rounded me-2">print</i>Print
+                    </button>
+                    {% if payroll.pdf_file %}
+                    <a href="{{ payroll.pdf_file.url }}" target="_blank" class="btn btn-success px-4">
+                        <i class="material-symbols-rounded me-2">download</i>Download PDF
+                    </a>
+                    {% else %}
+                    <span class="btn btn-secondary px-4 disabled">
+                        <i class="material-symbols-rounded me-2">hourglass_empty</i>PDF Generating...
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style>
+@media print {
+    body { background: white; }
+    .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+    .btn, .navbar, .footer { display: none !important; }
+    .container-fluid { max-width: 100% !important; }
+    h1, h2, h3, h4, h5, h6 { color: #000 !important; }
+    .bg-gradient-to-r { background: #f8f9fa !important; }
+    .text-white { color: #000 !important; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-format numbers on load
+    document.querySelectorAll('[data-currency]').forEach(el => {
+        const val = parseFloat(el.textContent.replace(/[^0-9.-]+/g,""));
+        if (!isNaN(val)) {
+            el.textContent = 'KSh ' + val.toLocaleString('en-KE', { minimumFractionDigits: 2 });
+        }
+    });
+});
+</script>
+{% endblock %}

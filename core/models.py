@@ -1,12 +1,11 @@
 from django.db import models
-from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from django.core.validators import RegexValidator, MinValueValidator
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from datetime import timedelta
 import uuid
-from decimal import Decimal
 
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name=_("Department Name"))
@@ -71,14 +70,6 @@ class Staff(models.Model):
         choices=EMPLOYMENT_STATUS_CHOICES,
         verbose_name=_("Employment Status"),
         default='AWAITING CONTRACT'
-    )
-    kra_pin = models.CharField(
-        max_length=11,
-        unique=True,
-        blank=True,
-        null=True,
-        validators=[RegexValidator(r'^[A-Za-z][0-9]{9}[A-Za-z]$', 'KRA PIN must be 11 characters: 1 letter, 9 digits, 1 letter')],
-        verbose_name=_("KRA PIN")
     )
     unique_id = models.CharField(max_length=30, unique=True, editable=False, verbose_name=_("Unique ID"))
     is_admin = models.BooleanField(default=False, verbose_name=_("Is Admin"))
@@ -182,94 +173,7 @@ def contract_upload_path(instance, filename):
     staff_id = getattr(instance, 'unique_id', None) or instance.staff.unique_id
     return f'contracts/staff_{staff_id}/{filename}'
 
-class Benefits(models.Model):
-    name = models.CharField(max_length = 100, verbose_name = ("Benefit Name"))
-class Deduction(models.Model):
-    DEDUCTION_TYPES = (
-        ('MANDATORY', 'Mandatory'),
-        ('VOLUNTARY', 'Voluntary'),
-        ('LOAN', 'Loan'),
-    )
-    
-    name = models.CharField(max_length=100, verbose_name=_("Deduction Name"))
-    percentage = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
-        verbose_name=_("Percentage Cut (%)")
-    )
-    description = models.TextField(verbose_name=_("Description"))
-    deduction_type = models.CharField(
-        max_length=20, 
-        choices=DEDUCTION_TYPES, 
-        default='MANDATORY',
-        verbose_name=_("Deduction Type")
-    )
-    is_active = models.BooleanField(default=True, verbose_name=_("Is Active"))
-    applies_to_contract_types = models.ManyToManyField(
-        'Contract', 
-        related_name='applicable_deductions',
-        blank=True,
-        verbose_name=_("Applies to Contract Types")
-    )
-    min_salary_threshold = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2, 
-        default=0,
-        validators=[MinValueValidator(0)],
-        verbose_name=_("Minimum Salary Threshold"),
-        help_text=_("Deduction only applies if salary is above this amount")
-    )
-    max_amount = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2, 
-        null=True, 
-        blank=True,
-        validators=[MinValueValidator(0)],
-        verbose_name=_("Maximum Deduction Amount"),
-        help_text=_("Maximum amount to deduct (overrides percentage if set)")
-    )
-    
-    # Auto fields
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        ordering = ['name']
-        verbose_name = _('Deduction')
-        verbose_name_plural = _('Deductions')
-        unique_together = ['name', 'percentage']  # Prevent duplicate deductions
-    
-    def __str__(self):
-        return f"{self.name} ({self.percentage}%)"
-    
-    @property
-    def is_mandatory(self):
-        return self.deduction_type == 'MANDATORY'
-    
-    def calculate_amount(self, salary):
-        """Calculate deduction amount based on salary"""
-        if not self.is_active:
-            return Decimal('0.00')
-        
-        # Check salary threshold
-        if salary < self.min_salary_threshold:
-            return Decimal('0.00')
-        
-        if self.max_amount:
-            # Use whichever is smaller: percentage or max_amount
-            percentage_amount = (salary * self.percentage / 100)
-            return min(percentage_amount, self.max_amount)
-        else:
-            # Simple percentage calculation
-            return salary * self.percentage / 100
-    
-    def get_display_percentage(self):
-        return f"{self.percentage}%"
-    
-    def get_display_amount(self, salary):
-        amount = self.calculate_amount(salary)
-        return f"KSh {amount:,.2f}"
+
 
 
 class Contract(models.Model):
@@ -293,7 +197,6 @@ class Contract(models.Model):
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
     salary = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
-    benefits = models.TextField(blank=True, null=True)
     job_title = models.CharField(max_length=200)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     status = models.CharField(max_length=20, choices=CONTRACT_STATUS, default='ACTIVE')
@@ -344,7 +247,7 @@ class Contract(models.Model):
         return (timezone.now().date() - self.start_date).days
 
     
-    def renew_contract(self, new_end_date, new_salary=None, new_benefits=None, new_job_title=None):
+    def renew_contract(self, new_end_date, new_salary=None, new_job_title=None):
         """Create a new contract based on the current one"""
         new_contract = Contract(
             staff=self.staff,
@@ -352,7 +255,6 @@ class Contract(models.Model):
             start_date=timezone.now().date(),
             end_date=new_end_date,
             salary=new_salary or self.salary,
-            benefits=new_benefits or self.benefits,
             job_title=new_job_title or self.job_title,
             department=self.department or self.staff.department,
             status='ACTIVE'
@@ -365,101 +267,7 @@ class Contract(models.Model):
         
         return new_contract
     
-    @property
-    def mandatory_deductions(self):
-        """Get only mandatory deductions (global)"""
-        return Deduction.objects.filter(
-            deduction_type='MANDATORY', 
-            is_active=True
-        )
     
-    @property
-    def all_deductions(self):
-        """Get ALL deductions: mandatory (global) + optional (with overrides)"""
-        mandatory = self.mandatory_deductions
-        optional_with_overrides = self._get_optional_deductions_with_overrides()
-        return list(mandatory) + list(optional_with_overrides)
-    
-    def _get_optional_deductions_with_overrides(self):
-        """Get optional deductions with their overrides"""
-        overrides = self.deduction_overrides.filter(is_active=True)
-        return [
-            {
-                'deduction': override.deduction,
-                'override': override,
-                'amount_calculator': override.calculate_amount
-            }
-            for override in overrides
-        ]
-
-    @property
-    def total_deductions_amount(self):
-        """Calculate total from ALL sources with overrides"""
-        total = Decimal('0.00')
-        
-        # Mandatory deductions (global)
-        for deduction in self.mandatory_deductions:
-            if self.salary >= deduction.min_salary_threshold:
-                total += deduction.calculate_amount(self.salary)
-        
-        # Optional deductions (with overrides)
-        for item in self._get_optional_deductions_with_overrides():
-            override = item['override']
-            total += override.calculate_amount(self.salary)
-        
-        return total
-    
-    @property
-    def net_salary(self):
-        """Calculate net salary after ALL deductions"""
-        return self.salary - self.total_deductions_amount
-    
-    @property
-    def deductions_breakdown(self):
-        """Get detailed breakdown of ALL deductions"""
-        breakdown = []
-        
-        # Mandatory deductions
-        for deduction in self.mandatory_deductions:
-            if self.salary >= deduction.min_salary_threshold:
-                amount = deduction.calculate_amount(self.salary)
-                if amount > 0:
-                    breakdown.append({
-                        'name': deduction.name,
-                        'percentage': deduction.percentage,
-                        'amount': amount,
-                        'description': deduction.description,
-                        'type': 'MANDATORY',
-                        'is_optional': False
-                    })
-        
-        # Optional deductions
-        for deduction in self.optional_deductions.filter(is_active=True):
-            if self.salary >= deduction.min_salary_threshold:
-                amount = deduction.calculate_amount(self.salary)
-                if amount > 0:
-                    breakdown.append({
-                        'name': deduction.name,
-                        'percentage': deduction.percentage,
-                        'amount': amount,
-                        'description': deduction.description,
-                        'type': deduction.deduction_type,
-                        'is_optional': True
-                    })
-        
-        return breakdown
-
-    def add_optional_deduction(self, deduction, percentage=None, fixed_amount=None):
-        """Helper method to add deduction override"""
-        ContractDeduction.objects.update_or_create(
-            contract=self,
-            deduction=deduction,
-            defaults={
-                'custom_percentage': percentage,
-                'fixed_amount': fixed_amount,
-                'is_active': True
-            }
-        )
     
     def save(self, *args, **kwargs):
         # Update status based on expiration
@@ -474,85 +282,7 @@ class Contract(models.Model):
             
         super().save(*args, **kwargs)
 
-class ContractDeduction(models.Model):
-    """Contract-specific deduction overrides"""
-    
-    contract = models.ForeignKey(
-        Contract, 
-        on_delete=models.CASCADE, 
-        related_name='deduction_overrides'
-    )
-    deduction = models.ForeignKey(
-        Deduction, 
-        on_delete=models.CASCADE,
-        limit_choices_to={'deduction_type__in': ['VOLUNTARY', 'LOAN']}
-    )
-    
-    # Override options: EITHER percentage OR fixed amount
-    custom_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2,
-        null=True, blank=True,
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
-        verbose_name=_("Custom Percentage (%)")
-    )
-    
-    fixed_amount = models.DecimalField(
-        max_digits=12, decimal_places=2,
-        null=True, blank=True,
-        validators=[MinValueValidator(0)],
-        verbose_name=_("Fixed Amount (KSh)")
-    )
-    
-    is_active = models.BooleanField(default=True)
-    
-    # Auto fields
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        unique_together = ['contract', 'deduction']  # One override per deduction per contract
-        verbose_name = _('Contract Deduction Override')
-        verbose_name_plural = _('Contract Deduction Overrides')
-    
-    def __str__(self):
-        if self.custom_percentage:
-            return f"{self.deduction.name}: {self.custom_percentage}%"
-        elif self.fixed_amount:
-            return f"{self.deduction.name}: KSh {self.fixed_amount}"
-        return f"{self.deduction.name} (No Override)"
-    
-    def clean(self):
-        """Ensure only ONE of percentage or fixed_amount is set"""
-        from django.core.exceptions import ValidationError
-        
-        if self.custom_percentage and self.fixed_amount:
-            raise ValidationError(
-                "Specify EITHER custom percentage OR fixed amount, not both."
-            )
-        
-        if not self.custom_percentage and not self.fixed_amount:
-            raise ValidationError(
-                "Must specify EITHER custom percentage OR fixed amount."
-            )
-    
-    def calculate_amount(self, salary):
-        """Calculate based on override"""
-        if not self.is_active:
-            return Decimal('0.00')
-        
-        if self.custom_percentage is not None:
-            return salary * self.custom_percentage / 100
-        elif self.fixed_amount is not None:
-            return self.fixed_amount
-        return Decimal('0.00')
-    
-    @property
-    def override_type(self):
-        if self.custom_percentage is not None:
-            return 'PERCENTAGE'
-        elif self.fixed_amount is not None:
-            return 'FIXED'
-        return None
+
 class ContractRenewal(models.Model):
     """Track contract renewal history"""
     contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='renewals')

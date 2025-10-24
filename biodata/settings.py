@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'accounts',
     'django_crontab',
     'widget_tweaks',
+    'payroll',
     'core.apps.CoreConfig'
 ]
 

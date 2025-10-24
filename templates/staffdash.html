@@ -20,6 +20,17 @@
         <i class="material-symbols-rounded text-sm">arrow_back</i>
         Back
       </button>
+      {% if staff.payroll_identity.all %}
+      <a href="{% url 'payroll:payroll_detail' staff.unique_id %}"
+        class="btn btn-sm btn-outline-info">
+          View Payslip
+      </a>
+      {% else %}
+      <a href="{% url 'payroll:payroll_create' staff.unique_id %}"
+        class="btn btn-sm btn-outline-info">
+          Create Payslip
+      </a>
+      {% endif %}
       <button class="btn btn-outline-primary btn-sm">
         <i class="material-symbols-rounded text-sm">download</i>
         Export PDF
@@ -173,7 +184,7 @@
                 <strong>Employment Category:</strong> {{ staff.get_employment_category_display }}
               </li>
               <li class="list-group-item border-0 px-0 text-sm">
-                <strong>Salary:</strong> KSh {{ staff.salary|default:"Not provided" }}
+                <strong>Salary:</strong> KSh {{ payroll.net_salary|default:"Not provided" }}
               </li>
               <li class="list-group-item border-0 px-0 text-sm">
                 <strong>Admin Status:</strong> {{ staff.is_admin|yesno:"Admin,Non-Admin" }}

@@ -1,9 +1,7 @@
 from django import forms
 from django.utils import timezone
-from .models import Staff, Department, Contract, ContractDeduction, Deduction
-from django.forms import inlineformset_factory
+from .models import Staff, Department, Contract
 import re
-from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 
 class StaffForm(forms.ModelForm):
@@ -48,14 +46,6 @@ class StaffForm(forms.ModelForm):
                 raise forms.ValidationError("National ID must be at least 6 characters long")
         return national_id
 
-    def clean_kra_pin(self):
-        """Validate KRA PIN format if provided"""
-        kra_pin = self.cleaned_data.get('kra_pin')
-        if kra_pin:
-            if not re.match(r'^[A-Za-z][0-9]{9}[A-Za-z]$', kra_pin):
-                raise forms.ValidationError("KRA PIN must be 11 characters: 1 letter, 9 digits, 1 letter")
-        return kra_pin
-
     def clean_phone(self):
         """Validate phone number format"""
         phone = self.cleaned_data.get('phone')
@@ -87,82 +77,14 @@ class StaffForm(forms.ModelForm):
         
         return cleaned_data
     
-class ContractDeductionOverrideForm(forms.ModelForm):
-    """Form for contract-specific deduction overrides"""
-    
-    class Meta:
-        model = ContractDeduction
-        fields = ['deduction', 'custom_percentage', 'fixed_amount', 'is_active']
-        widgets = {
-            'deduction': forms.Select(attrs={
-                'class': 'form-control bg-white border-gray-300 focus:border-purple-500'
-            }),
-            'custom_percentage': forms.NumberInput(attrs={
-                'class': 'form-control bg-white border-gray-300 focus:border-purple-500',
-                'step': '0.01',
-                'min': '0',
-                'max': '100',
-                'placeholder': '0.00'
-            }),
-            'fixed_amount': forms.NumberInput(attrs={
-                'class': 'form-control bg-white border-gray-300 focus:border-purple-500',
-                'step': '0.01',
-                'min': '0',
-                'placeholder': '0.00'
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
-            })
-        }
-    
-    def __init__(self, *args, **kwargs):
-        self.contract = kwargs.pop('contract', None)
-        super().__init__(*args, **kwargs)
-        
-        # Only show VOLUNTARY and LOAN deductions
-        self.fields['deduction'].queryset = Deduction.objects.filter(
-            deduction_type__in=['VOLUNTARY', 'LOAN'],
-            is_active=True
-        ).order_by('name')
-        
-        # Add CSS classes
-        for field in self.fields.values():
-            if isinstance(field.widget, forms.TextInput) or isinstance(field.widget, forms.NumberInput):
-                field.widget.attrs['class'] += ' rounded-lg'
-    
-    def clean(self):
-        cleaned_data = super().clean()
-        custom_pct = cleaned_data.get('custom_percentage')
-        fixed_amt = cleaned_data.get('fixed_amount')
-        
-        if custom_pct and fixed_amt:
-            raise forms.ValidationError(
-                "Specify EITHER percentage OR fixed amount, not both."
-            )
-        
-        if not custom_pct and not fixed_amt:
-            raise forms.ValidationError(
-                "Must specify EITHER percentage OR fixed amount."
-            )
-        
-        return cleaned_data
 
-# Inline formset for multiple overrides
-ContractDeductionFormSet = inlineformset_factory(
-    Contract,
-    ContractDeduction,
-    form=ContractDeductionOverrideForm,
-    extra=1,  # Show 3 empty rows
-    can_delete=True,
-    fields=['deduction', 'custom_percentage', 'fixed_amount', 'is_active']
-)
 
 class ContractForm(forms.ModelForm):
     class Meta:
         model = Contract
         fields = [
             'contract_type', 'start_date', 'end_date', 'salary',
-            'benefits', 'job_title', 'department', 'document', 'notes'
+            'job_title', 'department', 'document', 'notes'
         ]
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
