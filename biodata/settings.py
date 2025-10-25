@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'accounts',
     'django_crontab',
     'widget_tweaks',
+    'django_weasyprint',
     'payroll',
     'core.apps.CoreConfig'
 ]
@@ -156,3 +157,7 @@ MIDDLEWARE = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+WEASYPRINT = {
+    'BIN': 'weasyprint',  # or full path if needed
+}

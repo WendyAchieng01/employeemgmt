@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Payslip - {{ payroll.staff_name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; font-size: 12px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .info { width: 48%; display: inline-block; vertical-align: top; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f5f5f5; }
+        .total { font-weight: bold; background-color: #e9ecef; }
+        .net-pay { font-size: 18px; text-align: center; margin: 30px 0; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; }
+        .footer { margin-top: 50px; text-align: center; font-size: 10px; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>MAMA LUCY KIBAKI HOSPITAL.</h1>
+    <p>P.O. Box 1234-00100, Nairobi | KRA PIN: P051234567A</p>
+    <h2>PAYSLIP</h2>
+    <p><strong>Period:</strong> {{ payroll.pay_period_start|date:"F d, Y" }} - {{ payroll.pay_period_end|date:"F d, Y" }}</p>
+</div>
+
+<div class="info" style="float: left;">
+    <strong>Employee:</strong> {{ payroll.staff_name }}<br>
+    ID: {{ payroll.staff.unique_id }}<br>
+    National ID: {{ payroll.staff_national_id }}<br>
+    KRA PIN: {{ payroll.staff_kra_pin|default:"N/A" }}<br>
+    Position: {{ payroll.contract.job_title }}
+</div>
+
+<div class="info" style="float: right; text-align: right;">
+    <strong>Payment:</strong> Bank Transfer<br>
+    Bank: {{ payroll.bank_name }}<br>
+    Branch: {{ payroll.bank_branch }} ({{ payroll.bank_branch_code }})<br>
+    Account: {{ payroll.account_no }}
+</div>
+
+<div style="clear: both; margin: 20px 0;"></div>
+
+<table>
+    <tr>
+        <th colspan="2"><strong>EARNINGS</strong></th>
+    </tr>
+    <tr>
+        <td>Basic Salary</td>
+        <td style="text-align: right;">KSh {{ payroll.gross_salary|floatformat:2 }}</td>
+    </tr>
+    <tr class="total">
+        <td><strong>Total Earnings</strong></td>
+        <td style="text-align: right;"><strong>KSh {{ payroll.gross_salary|floatformat:2 }}</strong></td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <th colspan="2"><strong>DEDUCTIONS</strong></th>
+    </tr>
+    {% for d in mandatory_deductions %}
+    <tr>
+        <td>{{ d.name }}</td>
+        <td style="text-align: right;">KSh {{ d.amount|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+    {% for cd in contract_deductions %}
+    <tr>
+        <td>{{ cd.deduction.name }}
+            {% if cd.custom_percentage %}({{ cd.custom_percentage }}%){% endif %}
+            {% if cd.fixed_amount %}(KSh {{ cd.fixed_amount }}){% endif %}
+        </td>
+        <td style="text-align: right;">KSh {{ cd.amount|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+    <tr class="total">
+        <td><strong>Total Deductions</strong></td>
+        <td style="text-align: right;"><strong>KSh {{ payroll.total_deductions|floatformat:2 }}</strong></td>
+    </tr>
+</table>
+
+<div class="net-pay">
+    <strong>NET PAY: KSh {{ payroll.net_salary|floatformat:2 }}</strong>
+</div>
+
+<div class="footer">
+    This is a computer-generated payslip. No signature required.<br>
+    Generated on: {{ payroll.generated_at|date:"M d, Y h:i A" }}
+</div>
+
+</body>
+</html>

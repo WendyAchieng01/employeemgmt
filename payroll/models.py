@@ -3,10 +3,26 @@ from django.core.validators import MinValueValidator, MaxValueValidator, RegexVa
 from decimal import Decimal
 from core.models import Contract, Staff
 from django.utils.translation import gettext_lazy as _
+from django_weasyprint import WeasyTemplateResponseMixin
+from django.template.loader import render_to_string
+from django.core.files.base import ContentFile
+import uuid
 
 # Create your models here.
 
+def payslip_upload_path(instance, filename):
+    """
+    Generate path: payslips/<unique_id>/<year>/<filename>
+    """
+    unique_id = instance.staff.unique_id
+    year = instance.pay_period_start.strftime('%Y')
+    # Optional: add month
+    # month = instance.pay_period_start.strftime('%m')
+    # return f'payslips/{unique_id}/{year}/{month}/{filename}'
+    
+    return f'payslips/{year}/{unique_id}/{filename}'
 class Payroll(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     staff = models.ForeignKey(
         'core.Staff',
         on_delete=models.CASCADE,
@@ -55,7 +71,7 @@ class Payroll(models.Model):
     account_no = models.CharField(max_length=20, verbose_name=_("Account Number"))
     generated_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Generated At"))
     pdf_file = models.FileField(
-        upload_to='payslips/%Y/%m/',
+        upload_to=payslip_upload_path,
         blank=True,
         null=True,
         verbose_name=_("Payslip PDF")
@@ -116,12 +132,62 @@ class Payroll(models.Model):
             total += cd.calculate_amount(self.gross_salary)
 
         return total
+    
+    def get_mandatory_deductions(self):
+        salary = self.gross_salary
+        deductions = []
+        for d in Deduction.objects.filter(deduction_type='MANDATORY', is_active=True):
+            amt = d.calculate_amount(salary)
+            if amt > 0:
+                deductions.append({'name': d.name, 'amount': amt})
+        return deductions
+
+    def get_contract_deductions(self):
+        salary = self.gross_salary
+        deductions = []
+        for cd in ContractDeduction.objects.filter(contract=self.contract, is_active=True):
+            amt = cd.calculate_amount(salary)
+            if amt > 0:
+                deductions.append({
+                    'deduction': cd.deduction,
+                    'custom_percentage': cd.custom_percentage,
+                    'fixed_amount': cd.fixed_amount,
+                    'amount': amt
+                })
+        return deductions
+    
+    def generate_pdf(self):
+        """Generate PDF payslip and save to pdf_file"""
+        from django.conf import settings
+
+        # Render the same detail template as HTML string
+        html_string = render_to_string('payroll_pdf.html', {
+            'payroll': self,
+            'mandatory_deductions': self.get_mandatory_deductions(),
+            'contract_deductions': self.get_contract_deductions(),
+            'staff': self.staff,
+        })
+
+        # Convert HTML to PDF
+        from weasyprint import HTML
+        pdf_file = HTML(string=html_string, base_url=settings.MEDIA_ROOT).write_pdf()
+
+        # Save to model
+        filename = f"payslip_{self.staff.unique_id}_{self.pay_period_start.strftime('%m')}.pdf"
+        self.pdf_file.save(filename, ContentFile(pdf_file), save=False)
 
     def save(self, *args, **kwargs):
-        """Auto-calculate deductions and net salary before saving"""
+        # Auto-calculate totals (existing logic)
         self.total_deductions = self.calculate_deductions()
         self.net_salary = self.gross_salary - self.total_deductions
+
+        # Generate PDF **after** saving (so we have .pk)
+        is_new = self.pk is None
         super().save(*args, **kwargs)
+
+        if is_new:
+            self.generate_pdf()
+            self.save(update_fields=['pdf_file'])  # Save PDF path
 
 
 class Deduction(models.Model):

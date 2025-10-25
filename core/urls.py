@@ -25,4 +25,7 @@ urlpatterns = [
     path('staff/<str:unique_id>/payroll/create/', 
      payroll_views.PayrollCreateView.as_view(), 
      name='payroll_create'),
+     path('staff/<str:unique_id>/payroll/edit/', 
+     payroll_views.PayrollUpdateView.as_view(), 
+     name='payroll_update'),
 ]
