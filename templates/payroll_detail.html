@@ -9,10 +9,10 @@
         <div class="col-12">
             <!-- Header Card -->
             <div class="card shadow-lg mb-4 border-0">
-                <div class="card-header bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4">
+                <div class="card-header bg-gradient-to-r from-indigo-600 to-purple-600 text-black p-4">
                     <div class="row align-items-center">
                         <div class="col">
-                            <h2 class="mb-1 text-white font-weight-bolder">
+                            <h2 class="mb-1 text-black font-weight-bolder">
                                 <i class="material-symbols-rounded align-middle me-2">receipt_long</i>
                                 PAYSLIP
                             </h2>
@@ -43,7 +43,7 @@
                             <p class="mb-1"><strong>Mama Lucy Kibaki Hospital.</strong></p>
                             <p class="mb-1 text-muted">P.O. Box 1234-00100, Nairobi</p>
                             <p class="mb-1 text-muted">KRA PIN: P051234567A</p>
-                            <p class="mb-0 text-muted">Tel: +254 700 000 000</p>
+                            <p class="mb-0 text-muted">Tel: +254 202 297 000</p>
                         </div>
                     </div>
                 </div>
@@ -174,7 +174,7 @@
                     <i class="material-symbols-rounded me-2">arrow_back</i>Back to Profile
                 </a>
                 <div>
-                    <button onclick="window.print()" class="btn btn-outline-primary me-2 px-4">
+                    <button id="print-pdf-btn" class="btn btn-outline-primary me-2 px-4">
                         <i class="material-symbols-rounded me-2">print</i>Print
                     </button>
                     {% if payroll.pdf_file %}
@@ -195,13 +195,9 @@
 <!-- Print Styles -->
 <style>
 @media print {
-    body { background: white; }
-    .card { box-shadow: none !important; border: 1px solid #ddd !important; }
-    .btn, .navbar, .footer { display: none !important; }
-    .container-fluid { max-width: 100% !important; }
-    h1, h2, h3, h4, h5, h6 { color: #000 !important; }
-    .bg-gradient-to-r { background: #f8f9fa !important; }
-    .text-white { color: #000 !important; }
+    body * { visibility: hidden; }
+    #print-pdf-btn, #print-pdf-btn * { visibility: visible; }
+    #print-pdf-btn { position: absolute; left: 0; top: 0; }
 }
 </style>
 
@@ -214,6 +210,38 @@ document.addEventListener('DOMContentLoaded', function() {
             el.textContent = 'KSh ' + val.toLocaleString('en-KE', { minimumFractionDigits: 2 });
         }
     });
+});
+</script>
+
+<script>
+document.getElementById('print-pdf-btn').addEventListener('click', function () {
+    const pdfUrl = "{{ payroll.pdf_file.url }}";  // Django template variable
+
+    if (!pdfUrl) {
+        alert("PDF is still generating. Please try again in a moment.");
+        return;
+    }
+
+    // Open PDF in new tab
+    const printWindow = window.open(pdfUrl, '_blank');
+
+    // Wait for PDF to load, then print
+    printWindow.onload = function () {
+        printWindow.focus();
+        printWindow.print();
+
+        // Optional: close tab after printing
+        printWindow.onafterprint = function () {
+            printWindow.close();
+        };
+    };
+
+    // Fallback: if onload doesn't fire (some browsers block it)
+    setTimeout(() => {
+        if (printWindow && !printWindow.closed) {
+            printWindow.print();
+        }
+    }, 1000);
 });
 </script>
 {% endblock %}
