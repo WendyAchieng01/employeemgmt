@@ -9,10 +9,10 @@
         <div class="col-12">
             <!-- Header Card -->
             <div class="card shadow-lg mb-4 border-0">
-                <div class="card-header bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4">
+                <div class="card-header bg-gradient-to-r from-indigo-600 to-purple-600 text-black p-4">
                     <div class="row align-items-center">
                         <div class="col">
-                            <h2 class="mb-1 text-white font-weight-bolder">
+                            <h2 class="mb-1 text-black font-weight-bolder">
                                 <i class="material-symbols-rounded align-middle me-2">receipt_long</i>
                                 PAYSLIP
                             </h2>
@@ -174,7 +174,7 @@
                     <i class="material-symbols-rounded me-2">arrow_back</i>Back to Profile
                 </a>
                 <div>
-                    <button onclick="window.print()" class="btn btn-outline-primary me-2 px-4">
+                    <button id="print-pdf-btn" class="btn btn-outline-primary me-2 px-4">
                         <i class="material-symbols-rounded me-2">print</i>Print
                     </button>
                     {% if payroll.pdf_file %}
@@ -214,6 +214,38 @@ document.addEventListener('DOMContentLoaded', function() {
             el.textContent = 'KSh ' + val.toLocaleString('en-KE', { minimumFractionDigits: 2 });
         }
     });
+});
+</script>
+
+<script>
+document.getElementById('print-pdf-btn').addEventListener('click', function () {
+    const pdfUrl = "{{ payroll.pdf_file.url }}";  // Django template variable
+
+    if (!pdfUrl) {
+        alert("PDF is still generating. Please try again in a moment.");
+        return;
+    }
+
+    // Open PDF in new tab
+    const printWindow = window.open(pdfUrl, '_blank');
+
+    // Wait for PDF to load, then print
+    printWindow.onload = function () {
+        printWindow.focus();
+        printWindow.print();
+
+        // Optional: close tab after printing
+        printWindow.onafterprint = function () {
+            printWindow.close();
+        };
+    };
+
+    // Fallback: if onload doesn't fire (some browsers block it)
+    setTimeout(() => {
+        if (printWindow && !printWindow.closed) {
+            printWindow.print();
+        }
+    }, 1000);
 });
 </script>
 {% endblock %}

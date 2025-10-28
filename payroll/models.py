@@ -180,14 +180,7 @@ class Payroll(models.Model):
         # Auto-calculate totals (existing logic)
         self.total_deductions = self.calculate_deductions()
         self.net_salary = self.gross_salary - self.total_deductions
-
-        # Generate PDF **after** saving (so we have .pk)
-        is_new = self.pk is None
         super().save(*args, **kwargs)
-
-        if is_new:
-            self.generate_pdf()
-            self.save(update_fields=['pdf_file'])  # Save PDF path
 
 
 class Deduction(models.Model):

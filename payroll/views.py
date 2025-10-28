@@ -1,148 +1,123 @@
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import CreateView
-from core.models import Contract, Staff
-from .models import ContractDeduction, Payroll, Deduction
-from django.views.generic import CreateView, UpdateView, DetailView
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.shortcuts import get_object_or_404
-from .models import Payroll, ContractDeduction
+from django.http import Http404
+from .models import Payroll, Staff, ContractDeduction, Deduction
 from .forms import PayrollForm, ContractDeductionFormSet
-    
 
-class PayrollCreateView(CreateView):
-    model = Payroll
-    form_class = PayrollForm
-    template_name = 'payroll_form.html'
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # Get staff and contract
-        unique_id = self.kwargs.get('unique_id')
-        staff = get_object_or_404(Staff, unique_id=unique_id)
-        active_contract = staff.contracts.filter(status='ACTIVE').first()
 
-        # Add formset
-        if self.request.POST:
-            context['deduction_formset'] = ContractDeductionFormSet(
-                self.request.POST, instance=active_contract
-            )
-        else:
-            context['deduction_formset'] = ContractDeductionFormSet(instance=active_contract)
-        
-        context.update({
-            'staff': staff,
-            'contract': active_contract,
-            'form': self.get_form()
-        })
-        
-        return context
-    
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        
-        unique_id = self.kwargs.get('unique_id')
-        staff = get_object_or_404(Staff, unique_id=unique_id)
-        active_contract = staff.contracts.filter(status='ACTIVE').first()
-        
-        
-        kwargs.update({
-            'staff': staff,
-            'contract': active_contract
-        })
-        
-        return kwargs
-    
-    def form_valid(self, form):
-        # Set staff and contract
-        unique_id = self.kwargs.get('unique_id')
-        staff = get_object_or_404(Staff, unique_id=unique_id)
-        active_contract = staff.contracts.filter(status='ACTIVE').first()
+def payroll_create_view(request, unique_id):
+    staff = get_object_or_404(Staff, unique_id=unique_id)
+    active_contract = staff.contracts.filter(status='ACTIVE').first()
 
-        # Save formset first (deductions linked to contract)
-        formset = self.get_context_data()['deduction_formset']
-        if formset.is_valid():
-            formset.instance = active_contract
-            formset.save()
-        
-        form.instance.staff = staff
-        form.instance.contract = active_contract
-        
-        # Save payroll
-        self.object = form.save()
-        response = super().form_valid(form)
-        
-        # Generate payslip message
-        messages.success(
-            self.request,
-            f'Payroll generated successfully for {staff.full_name}! '
-            f'Net Salary: KSh {form.instance.net_salary:,.2f}'
+    if not active_contract:
+        messages.error(
+            request,
+            f"No active contract found for {staff.full_name}. "
+            f"Please activate a contract before generating payroll."
         )
-        
-        return response
-    
-    def get_success_url(self):
-        unique_id = self.kwargs.get('unique_id')
-        return reverse_lazy('payroll:payroll_detail', kwargs={'unique_id': self.object.staff.unique_id})
+        return redirect('core:staff_list')
+
+    # Instantiate form and formset
+    if request.method == 'POST':
+        form = PayrollForm(request.POST, staff=staff, contract=active_contract)
+        deduction_formset = ContractDeductionFormSet(request.POST, instance=active_contract)
+
+        if form.is_valid() and deduction_formset.is_valid():
+            # Save deductions
+            deduction_formset.save()
+
+            # Save payroll
+            payroll = form.save(commit=False)
+            payroll.staff = staff
+            payroll.contract = active_contract
+            payroll.save()
+
+            messages.success(
+                request,
+                f'Payroll generated successfully for {staff.full_name}! '
+                f'Net Salary: KSh {payroll.net_salary:,.2f}'
+            )
+            return redirect('payroll:payroll_detail', unique_id=staff.unique_id)
+    else:
+        form = PayrollForm(staff=staff, contract=active_contract)
+        deduction_formset = ContractDeductionFormSet(instance=active_contract)
+
+    context = {
+        'staff': staff,
+        'contract': active_contract,
+        'form': form,
+        'deduction_formset': deduction_formset,
+    }
+    return render(request, 'payroll_form.html', context)
 
 
-# -----------------------------------------------------------------
-# Update view – almost identical, just inherit from UpdateView
-# -----------------------------------------------------------------
-class PayrollUpdateView(PayrollCreateView, UpdateView):
-    """Reuse the same logic for editing."""
-    def get_object(self, queryset=None):
-        # pk is the Payroll primary key
-        return super().get_object(queryset)
-    
 
-class PayrollDetailView(DetailView):
-    model = Payroll
-    template_name = 'payroll_detail.html'
-    context_object_name = 'payroll'
+def payroll_update_view(request, unique_id):
+    staff = get_object_or_404(Staff, unique_id=unique_id)
+    payroll = Payroll.objects.filter(staff=staff).order_by('-pay_period_end').first()
 
-    def get_object(self, queryset=None):
-        """
-        Find the Payroll by staff.unique_id + pay_period_start.
-        You can change the lookup logic (latest, specific period, etc.)
-        """
-        unique_id = self.kwargs.get('unique_id')
-        staff = get_object_or_404(Staff, unique_id=unique_id)
+    if not payroll:
+        raise Http404("No payroll record found for this staff member.")
 
-        # If you want the *most recent* payroll:
-        payroll = Payroll.objects.filter(staff=staff).order_by('-pay_period_end').first()
-        # if not payroll: raise Http404
+    active_contract = payroll.contract
 
-        return payroll
+    if request.method == 'POST':
+        form = PayrollForm(request.POST, instance=payroll, staff=staff, contract=active_contract)
+        deduction_formset = ContractDeductionFormSet(request.POST, instance=active_contract)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        payroll = self.object
-        salary = payroll.gross_salary
+        if form.is_valid() and deduction_formset.is_valid():
+            deduction_formset.save()
+            form.save()
 
-        # Mandatory deductions
-        mandatory = []
-        for d in Deduction.objects.filter(deduction_type='MANDATORY', is_active=True):
-            amt = d.calculate_amount(salary)
-            if amt > 0:
-                mandatory.append({'name': d.name, 'amount': amt})
+            messages.success(
+                request,
+                f'Payroll updated successfully for {staff.full_name}!'
+            )
+            return redirect('payroll:payroll_detail', unique_id=staff.unique_id)
+    else:
+        form = PayrollForm(instance=payroll, staff=staff, contract=active_contract)
+        deduction_formset = ContractDeductionFormSet(instance=active_contract)
 
-        # Optional (contract) deductions
-        optional = []
-        for cd in ContractDeduction.objects.filter(contract=payroll.contract, is_active=True):
-            amt = cd.calculate_amount(salary)
-            if amt > 0:
-                optional.append({
-                    'deduction': cd.deduction,
-                    'custom_percentage': cd.custom_percentage,
-                    'fixed_amount': cd.fixed_amount,
-                    'amount': amt
-                })
+    context = {
+        'staff': staff,
+        'contract': active_contract,
+        'form': form,
+        'deduction_formset': deduction_formset,
+    }
+    return render(request, 'payroll_form.html', context)
 
-        context.update({
-            'mandatory_deductions': mandatory,
-            'contract_deductions': optional,
-            'staff': payroll.staff,
-        })
-        return context
+
+def payroll_detail_view(request, unique_id):
+    staff = get_object_or_404(Staff, unique_id=unique_id)
+    payroll = get_object_or_404(Payroll, staff=staff)
+
+    salary = payroll.gross_salary
+
+    # Mandatory deductions
+    mandatory = []
+    for d in Deduction.objects.filter(deduction_type='MANDATORY', is_active=True):
+        amt = d.calculate_amount(salary)
+        if amt > 0:
+            mandatory.append({'name': d.name, 'amount': amt})
+
+    # Optional (contract) deductions
+    optional = []
+    for cd in ContractDeduction.objects.filter(contract=payroll.contract, is_active=True):
+        amt = cd.calculate_amount(salary)
+        if amt > 0:
+            optional.append({
+                'deduction': cd.deduction,
+                'custom_percentage': cd.custom_percentage,
+                'fixed_amount': cd.fixed_amount,
+                'amount': amt
+            })
+
+    context = {
+        'payroll': payroll,
+        'mandatory_deductions': mandatory,
+        'contract_deductions': optional,
+        'staff': payroll.staff,
+    }
+    return render(request, 'payroll_detail.html', context)
+

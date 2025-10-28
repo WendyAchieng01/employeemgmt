@@ -23,9 +23,9 @@ urlpatterns = [
     path('billing/', views.billing, name='billing'),
     path('about/', views.about, name='about'),
     path('staff/<str:unique_id>/payroll/create/', 
-     payroll_views.PayrollCreateView.as_view(), 
+     payroll_views.payroll_create_view, 
      name='payroll_create'),
-     path('staff/<str:unique_id>/payroll/edit/', 
-     payroll_views.PayrollUpdateView.as_view(), 
+    path('staff/<str:unique_id>/payroll/edit/', 
+     payroll_views.payroll_update_view, 
      name='payroll_update'),
 ]
