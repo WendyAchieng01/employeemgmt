@@ -6,4 +6,5 @@ from .models import Payroll
 def generate_payroll_pdf(sender, instance, created, **kwargs):
     if created or not instance.pdf_file:
         instance.generate_pdf()
+        
         instance.save(update_fields=['pdf_file'])

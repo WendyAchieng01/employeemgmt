@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Department, Staff, Contract, ContractRenewal
+from .models import Department, Staff, Contract, ContractRenewal, Designation
 from django.utils.html import format_html
 
 
@@ -14,14 +14,22 @@ class DepartmentAdmin(admin.ModelAdmin):
         return obj.staff_members.count()
     staff_count.short_description = 'Staff Count'
 
+@admin.register(Designation)
+class DesignationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description', 'staff_count', 'created_at']
+    list_filter = ['created_at']
+    readonly_fields = ['created_at', 'updated_at']
 
+    def staff_count(self, obj):
+        return obj.staff_designation.count()
+    staff_count.short_description = 'Staff Count'
     
 # Add a custom method for full_name
 class StaffAdmin(admin.ModelAdmin):
     list_display = [
         'unique_id', 'full_name', 'department', 'designation', 
         'employment_category', 'employment_status', 'employment_date', 
-        'salary', 'is_admin'
+        'is_admin'
     ]
     
     list_filter = [
@@ -50,7 +58,7 @@ class StaffAdmin(admin.ModelAdmin):
         ('Employment Information', {
             'fields': (
                 'department', 'designation', 'employment_date', 
-                'employment_category', 'salary', 'employment_status', 'is_admin'
+                'employment_category', 'employment_status', 'is_admin'
             )
         }),
         ('Emergency Contact', {

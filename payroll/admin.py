@@ -7,7 +7,7 @@ class PayrollAdmin(admin.ModelAdmin):
     list_display = [
         'staff_name', 'pay_period_start', 'pay_period_end',
         'gross_salary', 'total_deductions', 'net_salary', 'generated_at',
-        'staff_national_id', 'staff_unique_id'
+        'staff_national_id', 'staff_unique_id', id
     ]
     list_filter = ['pay_period_start', 'pay_period_end']
     search_fields = ['staff__full_name', 'contract__job_title']
