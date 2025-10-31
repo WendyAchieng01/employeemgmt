@@ -25,6 +25,16 @@ class Department(models.Model):
     class Meta:
         ordering = ['name']
 
+class Designation(models.Model):
+    name = models.CharField(max_length=50, unique=True, verbose_name=_("Designation Name"))
+    description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name}"
+
 class Staff(models.Model):
     GENDER_CHOICES = [
         ('M', 'Male'),
@@ -58,10 +68,9 @@ class Staff(models.Model):
     national_id = models.CharField(max_length=20, unique=True, verbose_name=_("National ID"))
     address = models.TextField(verbose_name=_("Address"))
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='staff_members', verbose_name=_("Department"))
-    designation = models.CharField(max_length=100, verbose_name=_("Position"))
+    designation = models.ForeignKey(Designation, on_delete=models.CASCADE, verbose_name=_("Position"), related_name="staff_designation")
     employment_date = models.DateField(verbose_name=_("Employment Date"))
     employment_category = models.CharField(max_length=20, choices=EMPLOYMENT_CATEGORY_CHOICES)
-    salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name=_("Salary"))
     emergency_contact_name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Emergency Contact Name"))
     emergency_contact_phone = models.CharField(max_length=15, blank=True, null=True, verbose_name=_("Emergency Contact Phone"))
     emergency_contact_relationship = models.CharField(max_length=50, blank=True, null=True, verbose_name=_("Emergency Contact Relationship"))

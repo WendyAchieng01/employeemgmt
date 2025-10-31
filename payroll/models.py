@@ -7,6 +7,7 @@ from django_weasyprint import WeasyTemplateResponseMixin
 from django.template.loader import render_to_string
 from django.core.files.base import ContentFile
 import uuid
+from django.conf import settings
 
 # Create your models here.
 
@@ -157,8 +158,10 @@ class Payroll(models.Model):
         return deductions
     
     def generate_pdf(self):
-        """Generate PDF payslip and save to pdf_file"""
-        from django.conf import settings
+        """Generate PDF payslip and save to pdf_file"""        
+
+        if self.pdf_file:
+            return  # Already exists
 
         # Render the same detail template as HTML string
         html_string = render_to_string('payroll_pdf.html', {
@@ -173,7 +176,7 @@ class Payroll(models.Model):
         pdf_file = HTML(string=html_string, base_url=settings.MEDIA_ROOT).write_pdf()
 
         # Save to model
-        filename = f"payslip_{self.staff.unique_id}_{self.pay_period_start.strftime('%m')}.pdf"
+        filename = f"payslip_{self.staff.unique_id}_{self.staff.full_name}_{self.pay_period_start.strftime('%m')}.pdf"
         self.pdf_file.save(filename, ContentFile(pdf_file), save=False)
 
     def save(self, *args, **kwargs):
@@ -181,7 +184,6 @@ class Payroll(models.Model):
         self.total_deductions = self.calculate_deductions()
         self.net_salary = self.gross_salary - self.total_deductions
         super().save(*args, **kwargs)
-
 
 class Deduction(models.Model):
     DEDUCTION_TYPES = (
