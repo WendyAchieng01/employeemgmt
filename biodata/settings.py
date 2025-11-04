@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'django_weasyprint',
     'payroll',
+    'django_celery_beat',
     'core.apps.CoreConfig'
 ]
 
@@ -161,3 +162,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 WEASYPRINT = {
     'BIN': 'weasyprint',  # or full path if needed
 }
+
+

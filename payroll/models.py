@@ -22,6 +22,15 @@ def payslip_upload_path(instance, filename):
     # return f'payslips/{unique_id}/{year}/{month}/{filename}'
     
     return f'payslips/{year}/{unique_id}/{filename}'
+
+PAYROLL_STATUS_CHOICES = [
+    ("PENDING", _("Pending Approval")),
+    ("APPROVED", _("Approved")),
+    ("REJECTED", _("Rejected")),
+]
+
+
+
 class Payroll(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     staff = models.ForeignKey(
@@ -36,8 +45,9 @@ class Payroll(models.Model):
         related_name='payroll_contract',
         verbose_name=_("Contract")
     )
-    pay_period_start = models.DateField(verbose_name=_("Pay Period Start"))
-    pay_period_end = models.DateField(verbose_name=_("Pay Period End"))
+    pay_month = models.DateField(verbose_name=_("Pay Month"), help_text=_("First day of the month that this payslip covers"), unique=False)# uniqueness is enforced in unique_together
+    pay_period_start = models.DateField(editable=False, verbose_name=_("Pay Period Start"))
+    pay_period_end = models.DateField(editable=False, verbose_name=_("Pay Period End"))
     gross_salary = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -58,6 +68,20 @@ class Payroll(models.Model):
         default=0,
         verbose_name=_("Net Salary")
     )
+    status = models.CharField(
+        max_length=10,
+        choices=PAYROLL_STATUS_CHOICES,
+        default="PENDING",
+        verbose_name=_("Status")
+    )
+    approved_by = models.ForeignKey(
+        'auth.User',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='approved_payrolls',
+        verbose_name=_("Approved By")
+    )
+    approved_at = models.DateTimeField(null=True, blank=True, verbose_name=_("Approved At"))
     kra_pin = models.CharField(
         max_length=11,
         unique=True,
@@ -79,13 +103,13 @@ class Payroll(models.Model):
     )
 
     class Meta:
-        ordering = ['-pay_period_end']
+        ordering = ['-pay_month']
         verbose_name = _('Payroll')
         verbose_name_plural = _('Payrolls')
-        unique_together = ['staff', 'pay_period_start', 'pay_period_end']
+        unique_together = ['staff', 'pay_month']
 
     def __str__(self):
-        return f"{self.staff_name} {self.staff_unique_id} - {self.pay_period_start} to {self.pay_period_end}"
+        return f"{self.staff_name} – {self.pay_month:%b %Y}"
 
     @property
     def staff_name(self):
@@ -179,11 +203,36 @@ class Payroll(models.Model):
         filename = f"payslip_{self.staff.unique_id}_{self.staff.full_name}_{self.pay_period_start.strftime('%m')}.pdf"
         self.pdf_file.save(filename, ContentFile(pdf_file), save=False)
 
+    def clean(self):
+        from dateutil.relativedelta import relativedelta
+        from django.core.exceptions import ValidationError
+        import calendar
+
+        if self.pay_month:
+            year, month = self.pay_month.year, self.pay_month.month
+            _, last_day = calendar.monthrange(year, month)
+            self.pay_period_start = self.pay_month.replace(day=1)
+            self.pay_period_end   = self.pay_month.replace(day=last_day)
+
     def save(self, *args, **kwargs):
         # Auto-calculate totals (existing logic)
+        self.clean()
         self.total_deductions = self.calculate_deductions()
         self.net_salary = self.gross_salary - self.total_deductions
         super().save(*args, **kwargs)
+
+    def approve(self, user):
+        from django.utils import timezone
+        self.status = "APPROVED"
+        self.approved_by = user
+        self.approved_at = timezone.now()
+        self.save()
+
+    def reject(self, user):
+        self.status = "REJECTED"
+        self.approved_by = user
+        self.approved_at = None
+        self.save()
 
 class Deduction(models.Model):
     DEDUCTION_TYPES = (

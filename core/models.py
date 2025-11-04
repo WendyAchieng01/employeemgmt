@@ -211,6 +211,7 @@ class Contract(models.Model):
     status = models.CharField(max_length=20, choices=CONTRACT_STATUS, default='ACTIVE')
     document = models.FileField(upload_to=contract_upload_path, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True, verbose_name="Active")
     
     
     # Auto fields

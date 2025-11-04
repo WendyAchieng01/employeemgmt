@@ -1,5 +1,7 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.shortcuts import redirect
 from .models import Deduction, ContractDeduction, Payroll
+from django.utils.html import format_html
 
 # Register your models here.
 @admin.register(Payroll)
@@ -7,11 +9,32 @@ class PayrollAdmin(admin.ModelAdmin):
     list_display = [
         'staff_name', 'pay_period_start', 'pay_period_end',
         'gross_salary', 'total_deductions', 'net_salary', 'generated_at',
-        'staff_national_id', 'staff_unique_id', id
+        'staff_national_id', 'staff_unique_id', 'status', 'approved_by', "approved_at"
     ]
     list_filter = ['pay_period_start', 'pay_period_end']
     search_fields = ['staff__full_name', 'contract__job_title']
-    readonly_fields = ['total_deductions', 'net_salary', 'generated_at']
+    readonly_fields = ['total_deductions', 'net_salary', 'generated_at', 'pay_period_start', 'pay_period_end']
+
+    def approve_btn(self, obj):
+        if obj.status != "APPROVED":
+            return format_html(
+                '<a class="button" href="?approve={}" onclick="return confirm(\'Approve payslip?\')">Approve</a>',
+                obj.pk
+            )
+        return "Approved"
+    approve_btn.short_description = "Actions"
+
+    def get_urls(self):
+        from django.urls import path
+        urls = super().get_urls()
+        custom = [path('approve/<int:pk>/', self.admin_site.admin_view(self.approve_view), name='payroll_approve')]
+        return custom + urls
+
+    def approve_view(self, request, pk):
+        payslip = Payroll.objects.get(pk=pk)
+        payslip.approve(request.user)
+        messages.success(request, f"Payslip for {payslip.staff} approved.")
+        return redirect(request.META.get('HTTP_REFERER', 'admin:payroll_payroll_changelist'))
 
 
 

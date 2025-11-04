@@ -8,16 +8,11 @@ class PayrollForm(ModelForm):
     class Meta:
         model = Payroll
         fields = [
-            'pay_period_start', 'pay_period_end', 
-            'gross_salary', 'bank_name', 'bank_branch', 
+            'gross_salary', 'bank_name', 'bank_branch', 'pay_month',
             'bank_branch_code', 'account_no', 'kra_pin'
         ]
         widgets = {
-            'pay_period_start': forms.DateInput(attrs={
-                'type': 'date',
-                'class': 'form-control bg-white border-gray-300 focus:border-purple-500 rounded-lg'
-            }),
-            'pay_period_end': forms.DateInput(attrs={
+            'pay_month': forms.DateInput(attrs={
                 'type': 'date',
                 'class': 'form-control bg-white border-gray-300 focus:border-purple-500 rounded-lg'
             }),
@@ -63,8 +58,6 @@ class PayrollForm(ModelForm):
             self.fields['gross_salary'].initial = self.contract.salary
             
         # Customize labels
-        self.fields['pay_period_start'].label = "Pay Period Start"
-        self.fields['pay_period_end'].label = "Pay Period End"
         self.fields['gross_salary'].label = "Gross Salary (KSh)"
         self.fields['account_no'].label = "Account Number"
 
@@ -76,15 +69,6 @@ class PayrollForm(ModelForm):
                 raise forms.ValidationError("KRA PIN must be 11 characters: 1 letter, 9 digits, 1 letter")
         return kra_pin
 
-    def clean(self):
-        cleaned_data = super().clean()
-        start_date = cleaned_data.get('pay_period_start')
-        end_date = cleaned_data.get('pay_period_end')
-        
-        if start_date and end_date and start_date > end_date:
-            raise forms.ValidationError("Pay period end date must be after start date.")
-            
-        return cleaned_data
 
 class ContractDeductionOverrideForm(forms.ModelForm):
     """Form for contract-specific deduction overrides"""
