@@ -2,6 +2,12 @@
 
 {% block title %}{{ staff.full_name }}'s Profile{% endblock %}
 
+{% block breadcrumb_active %}
+    <li class="breadcrumb-item text-sm text-dark active" aria-current="page">
+        Profile
+    </li>
+{% endblock %}
+
 {% block content %}
 {% load static %}
 

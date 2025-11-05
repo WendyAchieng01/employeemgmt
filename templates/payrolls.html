@@ -1,6 +1,12 @@
 {% extends 'base1.html' %}
 
-{% block title %}Contracts{% endblock %}
+{% block title %}Payrolls{% endblock %}
+
+{% block breadcrumb_active %}
+    <li class="breadcrumb-item text-sm text-dark active" aria-current="page">
+        Payrolls Dashboard
+    </li>
+{% endblock %}
 
 {% block content %}
 {% load static %}
@@ -16,8 +22,8 @@
             <div class="card-header p-2 ps-3">
               <div class="d-flex justify-content-between">
                 <div>
-                  <p class="text-sm mb-0 text-capitalize">Total Contracts</p>
-                  <h4 class="mb-0">{{ contracts.count }}</h4>
+                  <p class="text-sm mb-0 text-capitalize">Total payslips</p>
+                  <h4 class="mb-0">{{ payroll.count }}</h4>
                 </div>
                 <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark text-center border-radius-lg">
                   <i class="fas fa-layer-group"></i>
@@ -133,11 +139,9 @@
                     <div class="input-group input-group-outline">
                       <select name="status" id="statusFilter" class="form-control">
                         <option value="">All Status</option>
-                        <option value="ACTIVE" {% if current_status == 'ACTIVE' %}selected{% endif %}>Active</option>
-                        <option value="EXPIRED" {% if current_status == 'EXPIRED' %}selected{% endif %}>Expired</option>
-                        <option value="TERMINATED" {% if current_status == 'TERMINATED' %}selected{% endif %}>Terminated</option>
-                        <option value="RENEWED" {% if current_status == 'RENEWED' %}selected{% endif %}>Renewed</option>
-                        <option value="PENDING" {% if current_status == 'PENDING' %}selected{% endif %}>Pending Renewal</option>
+                        <option value="PENDING APPROVAL" {% if current_status == 'PENDING APPROVAL' %}selected{% endif %}>Pending Approval</option>
+                        <option value="APPROVED" {% if current_status == 'APPROVED' %}selected{% endif %}>Approved</option>
+                        <option value="REJECTED" {% if current_status == 'REJECTED' %}selected{% endif %}>Rejected</option>
                       </select>
                     </div>
                   </div>
@@ -222,7 +226,7 @@
                   <h6>Contracts</h6>
                   <p class="text-sm mb-0">
                     <i class="fa fa-check text-info" aria-hidden="true"></i>
-                    <span class="font-weight-bold ms-1">{{ contracts.count }}</span> contracts
+                    <span class="font-weight-bold ms-1">{{ payroll.count }}</span> payslips
                   </p>
                 </div>
                 <div class="col-lg-6 col-5 my-auto text-end">
@@ -245,15 +249,15 @@
                   <thead>
                     <tr>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Staff</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Job Title</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Designation</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Contract Type</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Expiry</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Month</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                  {% for contract in contracts %}
+                  {% for payslip in payroll %}
                     <tr>
                       <td>
                         <div class="d-flex px-2 py-1">
@@ -261,45 +265,42 @@
                             <img src="{% static 'img/small-logos/logo-xd.svg' %}" class="avatar avatar-sm me-3" alt="xd">
                           </div>
                           <div class="d-flex flex-column justify-content-center">
-                            <a href="{% url 'core:staff_detail' contract.staff.unique_id %}">
-                              <h6 class="mb-0 text-sm">{{ contract.staff }}</h6>
+                            <a href="#">
+                              <h6 class="mb-0 text-sm">{{ payslip.staff }}</h6>
                             </a>
                           </div>
                         </div>
                       </td>
 
-                      <td><h6 class="mb-0">{{ contract.job_title }}</h6></td>
+                      <td><h6 class="mb-0">{{ payslip.staff.designation }}</h6></td>
                       <td><h6 class="mb-0 text-sm">{{ contract.contract_type }}</h6></td>
-                      <td class="text-center"><span class="text-xs font-weight-bold">{{ contract.end_date|date:"M d, Y" }}</span></td>
+                      <td class="text-center"><span class="text-xs font-weight-bold">{{ payslip.pay_month|date:"M" }}</span></td>
 
                       <td class="text-center text-sm">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                          {% if contract.status == 'ACTIVE' %}bg-green-100 text-green-800
-                          {% elif contract.status == 'INACTIVE' %}bg-yellow-100 text-yellow-800
-                          {% elif contract.status == 'EXPIRED' %}bg-red-100 text-red-800
-                          {% elif contract.status == 'TERMINATED' %}bg-gray-100 text-gray-800
-                          {% elif contract.status == 'RETIRED' %}bg-blue-100 text-blue-800
+                          {% if payslip.status == 'APPROVED' %}bg-green-100 text-green-800
+                          {% elif payslip.status == 'PENDING APPROVAL' %}bg-yellow-100 text-yellow-800
+                          {% elif payslip.status == 'REJECTED' %}bg-red-100 text-red-800
                           {% endif %}">
                           <i class="material-symbols-rounded text-xs mr-1">
-                            {% if contract.status == 'ACTIVE' %}check_circle
-                            {% elif contract.status == 'INACTIVE' %}pause_circle
-                            {% elif contract.status == 'EXPIRED' %}cancel
-                            {% elif contract.status == 'RETIRED' %}elderly
+                            {% if payslip.status == 'APPROVED' %}check_circle
+                            {% elif payslip.status == 'PENDING APPROVAL' %}pause_circle
+                            {% elif payslip.status == 'REJECTED' %}cancel
                             {% endif %}
                           </i>
-                          {{ contract.get_status_display }}
+                          {{ payslip.get_status_display }}
                         </span>
                       </td>
 
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div class="align-middle">
-                              <a href="{% url 'core:contract_detail' contract.id %}" class="text-purple-600 hover:text-purple-900 mr-3" title="View">
+                              <a href="#" class="text-purple-600 hover:text-purple-900 mr-3" title="View">
                                   <i class="fas fa-eye"></i>
                               </a>
-                              <a href="{% url 'core:contract_update' contract.id %}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
+                              <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
                                   <i class="fas fa-pen"></i>
                               </a>
-                              <a href="{% url 'core:contract_renew' contract.id %}" class="text-green-600 hover:text-green-900 mr-3" title="Renew">
+                              <a href="#" class="text-green-600 hover:text-green-900 mr-3" title="Renew">
                                   <i class="fas fa-sync-alt"></i>
                               </a>
                               <button type="button" 

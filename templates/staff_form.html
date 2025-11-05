@@ -1,5 +1,12 @@
 {% extends 'base1.html' %}
 {% block title %}{{ title }} - Staff Management System{% endblock %}
+
+{% block breadcrumb_active %}
+    <li class="breadcrumb-item text-sm text-dark active" aria-current="page">
+        Register Staff
+    </li>
+{% endblock %}
+
 {% block content %}
 {% load static %}
 {% load widget_tweaks %}

@@ -29,18 +29,19 @@ def create_monthly_payslips():
             continue
 
         # You probably have a way to know the monthly gross for this staff
-        gross = contract.monthly_gross_salary()   # ← implement in Contract or elsewhere
+        gross = contract.salary   # ← implement in Contract or elsewhere
+        payroll = Payroll.objects.filter(staff=staff, pay_month=target_month)
 
         payslip = Payroll(
             staff=staff,
             contract=contract,
             pay_month=target_month,
             gross_salary=gross,
-            bank_name=staff.bank_name or "",
-            bank_branch=staff.bank_branch or "",
-            bank_branch_code=staff.bank_branch_code or "",
-            account_no=staff.account_no or "",
-            kra_pin=staff.kra_pin or "",
+            bank_name=payroll.bank_name or "",
+            bank_branch=payroll.bank_branch or "",
+            bank_branch_code=payroll.bank_branch_code or "",
+            account_no=payroll.account_no or "",
+            kra_pin=payroll.kra_pin or "",
         )
         payslip.save()               # triggers deduction calc + PDF generation
         payslip.generate_pdf()       # optional – generate PDF now

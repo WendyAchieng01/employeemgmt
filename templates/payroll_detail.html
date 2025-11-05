@@ -3,6 +3,12 @@
 
 {% block title %}Payslip - {{ payroll.staff_name }} - {{ payroll.pay_period_start|date:"M Y" }}{% endblock %}
 
+{% block breadcrumb_active %}
+    <li class="breadcrumb-item text-sm text-dark active" aria-current="page">
+        Payroll
+    </li>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4">
     <div class="row">

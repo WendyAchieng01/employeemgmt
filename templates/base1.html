@@ -116,7 +116,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark {% active request '/payroll/' %}" href="#">
+            <a class="nav-link text-dark {% active request '/payroll/' %}" href="{% url 'payroll:payroll_dash' %}">
               <i class="material-symbols-rounded opacity-5">assignment</i>
               <span class="nav-link-text ms-1">Payroll</span>
             </a>
@@ -175,8 +175,10 @@
       <div class="container-fluid py-1 px-3">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
-            <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="javascript:;">Pages</a></li>
-            <li class="breadcrumb-item text-sm text-dark active" aria-current="page">Dashboard</li>
+            <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="/">Pages</a></li>
+            {% block breadcrumb_active %}
+            <li class="breadcrumb-item text-sm text-dark active" aria-current="page">{{ page_name|default:"Dashboard" }}</li>
+            {% endblock %}
           </ol>
         </nav>
         <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
@@ -690,6 +692,45 @@
         },
       },
     });
+  </script>
+  <script>
+    // Page title mappings - customize this for your pages
+    const pageTitles = {
+        '/': 'Dashboard',
+        '/index.html': 'Dashboard',
+        '/casuals': 'Casuals Directory',
+        '/locumers': 'Locum Dashboard',
+        '/contracts': 'Contracts',
+        '/profile': 'My Profile', 
+        '/profile.html': 'My Profile',
+        '/settings': 'Settings',
+        '/settings.html': 'Settings',
+        '/reports': 'Reports',
+        '/reports.html': 'Reports',
+        '/products': 'Products',
+        '/products.html': 'Products'
+    };
+
+    function updateBreadcrumb() {
+        const currentPath = window.location.pathname;
+        const currentPageElement = document.getElementById('current-page');
+        
+        if (currentPageElement) {
+            // Try to get page name from mappings, or use document title as fallback
+            const pageName = pageTitles[currentPath] || 
+                            pageTitles[window.location.href] ||
+                            document.title.replace(/[^-]* - /, '') || 
+                            'Current Page';
+            
+            currentPageElement.textContent = pageName;
+        }
+    }
+
+    // Run when page loads
+    document.addEventListener('DOMContentLoaded', updateBreadcrumb);
+
+    // Also run when navigating in SPAs (if applicable)
+    window.addEventListener('load', updateBreadcrumb);
   </script>
   <script src="{% static 'js/inactivity_logout.js' %}"></script>
   <script>

@@ -7,7 +7,7 @@ from django.utils.html import format_html
 @admin.register(Payroll)
 class PayrollAdmin(admin.ModelAdmin):
     list_display = [
-        'staff_name', 'pay_period_start', 'pay_period_end',
+        'staff_name', 'pay_period_start', 'pay_period_end', 'id', 'pay_month',
         'gross_salary', 'total_deductions', 'net_salary', 'generated_at',
         'staff_national_id', 'staff_unique_id', 'status', 'approved_by', "approved_at"
     ]

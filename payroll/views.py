@@ -2,8 +2,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.http import Http404
+from core.models import Department
 from .models import Payroll, Staff, ContractDeduction, Deduction
 from .forms import PayrollForm, ContractDeductionFormSet
+from django.db.models import Q, Count
 
 
 def payroll_create_view(request, unique_id):
@@ -121,3 +123,46 @@ def payroll_detail_view(request, unique_id):
     }
     return render(request, 'payroll_detail.html', context)
 
+def payrolldash(request):
+    # Get query parameters
+    search_query = request.GET.get('search', '')
+    department_id = request.GET.get('department', '')
+    status = request.GET.get('status', '')
+
+    # Base queryset
+    payroll = Payroll.objects.all()
+    total = payroll.count()
+    staff = Staff.objects.all()
+
+    # Apply search filter (Name, ID, Email, KRA PIN)
+    if search_query:
+        staff = staff.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(middle_name__icontains=search_query) |
+            Q(unique_id__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+        payroll = payroll.filter(staff__in=staff)
+
+    # Apply department filter
+    if department_id:
+        payroll = payroll.filter(staff__department_id=department_id)
+
+    # Apply status filter
+    if status:
+        payroll = payroll.filter(status=status)
+
+    # Get departments with staff count for filter dropdown
+    departments = Department.objects.annotate(staff_count=Count('staff_members'))
+
+    context = {
+        'staff_list': staff,
+        'total': total,
+        'departments': departments,
+        'search_query': search_query,
+        'current_dept': department_id,
+        'current_status': status,
+        'payroll': payroll,
+    }
+    return render(request, 'payrolls.html', context)
