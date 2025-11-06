@@ -40,7 +40,7 @@ def payroll_create_view(request, unique_id):
                 f'Payroll generated successfully for {staff.full_name}! '
                 f'Net Salary: KSh {payroll.net_salary:,.2f}'
             )
-            return redirect('payroll:payroll_detail', unique_id=staff.unique_id)
+            return redirect('payroll:payroll_detail', id=payroll.id)
     else:
         form = PayrollForm(staff=staff, contract=active_contract)
         deduction_formset = ContractDeductionFormSet(instance=active_contract)
