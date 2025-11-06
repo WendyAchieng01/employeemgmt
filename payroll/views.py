@@ -76,7 +76,7 @@ def payroll_update_view(request, unique_id):
                 request,
                 f'Payroll updated successfully for {staff.full_name}!'
             )
-            return redirect('payroll:payroll_detail', unique_id=staff.unique_id)
+            return redirect('payroll:payroll_detail', id=payroll.id)
     else:
         form = PayrollForm(instance=payroll, staff=staff, contract=active_contract)
         deduction_formset = ContractDeductionFormSet(instance=active_contract)
