@@ -353,7 +353,8 @@ def contract_renew(request, unique_id):
 
 def contract_detail(request, unique_id):
     contract = get_object_or_404(Contract, id=unique_id)
-    context = {'contract': contract}
+    payroll = Payroll.objects.filter(contract=contract).order_by('-pay_month').first()
+    context = {'contract': contract, 'payroll': payroll}
     return render(request, 'contract_detail.html', context)
 
 def contract_update(request, unique_id):
