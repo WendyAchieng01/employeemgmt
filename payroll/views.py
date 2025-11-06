@@ -6,7 +6,7 @@ from core.models import Department
 from .models import Payroll, Staff, ContractDeduction, Deduction
 from .forms import PayrollForm, ContractDeductionFormSet
 from django.db.models import Q, Count
-
+import uuid
 
 def payroll_create_view(request, unique_id):
     staff = get_object_or_404(Staff, unique_id=unique_id)
@@ -90,9 +90,8 @@ def payroll_update_view(request, unique_id):
     return render(request, 'payroll_form.html', context)
 
 
-def payroll_detail_view(request, unique_id):
-    staff = get_object_or_404(Staff, unique_id=unique_id)
-    payroll = get_object_or_404(Payroll, staff=staff)
+def payroll_detail_view(request, pk: uuid.UUID):
+    payroll = get_object_or_404(Payroll, id=pk)
 
     salary = payroll.gross_salary
 

@@ -17,7 +17,7 @@ def create_monthly_payslips():
     active_contracts = Contract.objects.filter(
         start_date__lte=target_month + relativedelta(months=1) - relativedelta(days=1),
         end_date__gte=target_month,
-        is_active=True
+        status='ACTIVE'
     ).select_related('staff')
 
     created = 0

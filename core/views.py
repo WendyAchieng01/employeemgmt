@@ -120,7 +120,7 @@ def contracts(request):
     status = request.GET.get('status', '')
 
     # Start with all contracts
-    contracts = Contract.objects.all()
+    contracts = Contract.objects.all().order_by('-start_date')
 
     # Apply search filter
     if search_query:
@@ -221,7 +221,7 @@ def staff_create(request):
 
 def staff_detail(request, unique_id):
     staff = get_object_or_404(Staff, unique_id=unique_id)
-    payroll = Payroll.objects.filter(staff=staff)
+    payroll = Payroll.objects.filter(staff=staff).order_by('-pay_month').first()
     return render(request, 'staffdash.html', {'staff': staff, 'payroll': payroll})
 
 @login_required

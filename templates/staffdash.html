@@ -27,7 +27,7 @@
         Back
       </button>
       {% if staff.payroll_identity.all %}
-      <a href="{% url 'payroll:payroll_detail' staff.unique_id %}"
+      <a href="{% url 'payroll:payroll_detail' payroll.id %}"
         class="btn btn-sm btn-outline-info">
           View Payslip
       </a>
