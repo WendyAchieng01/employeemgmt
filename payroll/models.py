@@ -8,6 +8,7 @@ from django.template.loader import render_to_string
 from django.core.files.base import ContentFile
 import uuid
 from django.conf import settings
+from django.utils import timezone
 
 # Create your models here.
 
@@ -222,7 +223,6 @@ class Payroll(models.Model):
         super().save(*args, **kwargs)
 
     def approve(self, user):
-        from django.utils import timezone
         self.status = "APPROVED"
         self.approved_by = user
         self.approved_at = timezone.now()
@@ -231,7 +231,7 @@ class Payroll(models.Model):
     def reject(self, user):
         self.status = "REJECTED"
         self.approved_by = user
-        self.approved_at = None
+        self.approved_at = timezone.now()
         self.save()
 
 class Deduction(models.Model):

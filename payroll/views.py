@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.http import Http404
@@ -40,7 +40,7 @@ def payroll_create_view(request, unique_id):
                 f'Payroll generated successfully for {staff.full_name}! '
                 f'Net Salary: KSh {payroll.net_salary:,.2f}'
             )
-            return redirect('payroll:payroll_detail', id=payroll.id)
+            return redirect('payroll:payroll_detail', pk=payroll.id)
     else:
         form = PayrollForm(staff=staff, contract=active_contract)
         deduction_formset = ContractDeductionFormSet(instance=active_contract)
@@ -55,9 +55,10 @@ def payroll_create_view(request, unique_id):
 
 
 
-def payroll_update_view(request, unique_id):
-    staff = get_object_or_404(Staff, unique_id=unique_id)
-    payroll = Payroll.objects.filter(staff=staff).order_by('-pay_period_end').first()
+def payroll_update_view(request, pk: uuid.UUID):
+    
+    payroll = Payroll.objects.filter(id=pk).order_by('-pay_period_end').first()
+    staff = get_object_or_404(Staff, unique_id=payroll.staff.unique_id)
 
     if not payroll:
         raise Http404("No payroll record found for this staff member.")
@@ -76,7 +77,7 @@ def payroll_update_view(request, unique_id):
                 request,
                 f'Payroll updated successfully for {staff.full_name}!'
             )
-            return redirect('payroll:payroll_detail', id=payroll.id)
+            return redirect('payroll:payroll_detail', pk=payroll.id)
     else:
         form = PayrollForm(instance=payroll, staff=staff, contract=active_contract)
         deduction_formset = ContractDeductionFormSet(instance=active_contract)
@@ -88,6 +89,21 @@ def payroll_update_view(request, unique_id):
         'deduction_formset': deduction_formset,
     }
     return render(request, 'payroll_form.html', context)
+
+def payroll_process_view(request, pk: uuid.UUID, action):
+    payroll = get_object_or_404(Payroll, id=pk)
+
+    if action == 'approve':
+        payroll.approve(request.user)
+        messages.success(request, "Approved successfully.")
+    elif action == 'reject':
+        payroll.reject(request.user)
+        messages.success(request, "Item rejected.")
+    else:
+        messages.error(request, "Invalid action.")
+
+    return HttpResponse("✅ Processed successfully!")
+
 
 
 def payroll_detail_view(request, pk: uuid.UUID):

@@ -3,49 +3,56 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from .models import Payroll, Contract
 from decimal import Decimal
+from django.shortcuts import render, get_object_or_404, redirect
 
 @shared_task
 def create_monthly_payslips():
-    """
-    Run on the 1st of every month (or on the 28th for safety).
-    Creates a PENDING payslip for every ACTIVE contract.
-    """
-    today = timezone.localdate()
-    target_month = today.replace(day=1)          # first day of current month
+    from django.utils import timezone
+    from dateutil.relativedelta import relativedelta
+    from .models import Payroll, Contract
+    from decimal import Decimal
+    import logging
 
-    # Find every contract that is active in this month
+    logger = logging.getLogger(__name__)
+    today = timezone.localdate()
+    target_month = today.replace(day=1)
+    month_end = target_month + relativedelta(months=1) - relativedelta(days=1)
+
+    logger.info(f"Generating payslips for {target_month:%B %Y}")
+
     active_contracts = Contract.objects.filter(
-        start_date__lte=target_month + relativedelta(months=1) - relativedelta(days=1),
+        start_date__lte=month_end,
         end_date__gte=target_month,
         status='ACTIVE'
     ).select_related('staff')
 
+    logger.info(f"Found {active_contracts.count()} active contracts")
+
     created = 0
     for contract in active_contracts:
         staff = contract.staff
-
-        # Skip if already exists
         if Payroll.objects.filter(staff=staff, pay_month=target_month).exists():
             continue
 
-        # You probably have a way to know the monthly gross for this staff
-        gross = contract.salary   # ← implement in Contract or elsewhere
-        payroll = Payroll.objects.filter(staff=staff, pay_month=target_month)
+        gross = getattr(contract, 'salary', Decimal('0.00'))
+        if gross <= 0:
+            logger.warning(f"Contract {contract.id} has no salary, skipping")
+            continue
 
-        payslip = Payroll(
+        payroll = get_object_or_404(Payroll, staff=staff)
+
+        Payroll.objects.create(
             staff=staff,
             contract=contract,
             pay_month=target_month,
             gross_salary=gross,
-            bank_name=payroll.bank_name or "",
-            bank_branch=payroll.bank_branch or "",
-            bank_branch_code=payroll.bank_branch_code or "",
-            account_no=payroll.account_no or "",
-            kra_pin=payroll.kra_pin or "",
+            bank_name=payroll.bank_name,
+            bank_branch=payroll.bank_branch,
+            kra_pin=payroll.kra_pin,
+            account_no=payroll.account_no,
+            # copy bank details, etc.
         )
-        payslip.save()               # triggers deduction calc + PDF generation
-        payslip.generate_pdf()       # optional – generate PDF now
-        payslip.save()
         created += 1
 
+    logger.info(f"Created {created} payslips")
     return f"Created {created} payslips for {target_month:%B %Y}"
