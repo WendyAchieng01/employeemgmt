@@ -148,7 +148,10 @@ def payrolldash(request):
     payroll = Payroll.objects.all()
     total = payroll.count()
     staff = Staff.objects.all()
-
+    pending = payroll.filter(status="PENDING")
+    approved = payroll.filter(status="APPROVED")
+    rejected = payroll.filter(status="REJECTED")
+    
     # Apply search filter (Name, ID, Email, KRA PIN)
     if search_query:
         staff = staff.filter(
@@ -179,5 +182,8 @@ def payrolldash(request):
         'current_dept': department_id,
         'current_status': status,
         'payroll': payroll,
+        'pending': pending,
+        'approved': approved,
+        'rejected': rejected,
     }
     return render(request, 'payrolls.html', context)

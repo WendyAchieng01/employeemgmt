@@ -43,8 +43,8 @@
             <div class="card-header p-2 ps-3">
               <div class="d-flex justify-content-between">
                 <div>
-                  <p class="text-sm mb-0 text-capitalize">Active Contracts</p>
-                  <h4 class="mb-0">{{ active.count }}</h4>
+                  <p class="text-sm mb-0 text-capitalize">Approved Payslips</p>
+                  <h4 class="mb-0">{{ approved.count }}</h4>
                 </div>
                 <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark text-center border-radius-lg">
                   <i class="fas fa-handshake"></i>
@@ -54,7 +54,7 @@
             <hr class="dark horizontal my-0">
             <div class="card-footer p-2 ps-3">
               <p class="mb-0 text-sm">
-                <span class="text-success font-weight-bolder">{% widthratio active.count contracts.count 100 %}%</span> of total contracts
+                <span class="text-success font-weight-bolder">{% widthratio approved.count payroll.count 100 %}%</span> of total payslips
               </p>
             </div>
           </div>
@@ -64,8 +64,8 @@
             <div class="card-header p-2 ps-3">
               <div class="d-flex justify-content-between">
                 <div>
-                  <p class="text-sm mb-0 text-capitalize">Inactive/Expired Contracts</p>
-                  <h4 class="mb-0">{{ inactive.count }}</h4>
+                  <p class="text-sm mb-0 text-capitalize">Pending Approval</p>
+                  <h4 class="mb-0">{{ pending.count }}</h4>
                 </div>
                 <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark text-center border-radius-lg">
                   <i class="fas fa-file-signature"></i>
@@ -75,7 +75,7 @@
             <hr class="dark horizontal my-0">
             <div class="card-footer p-2 ps-3">
               <p class="mb-0 text-sm">
-                <span class="text-danger font-weight-bolder">{% widthratio inactive.count contracts.count 100 %}%</span> of total contracts
+                <span class="text-danger font-weight-bolder">{% widthratio pending.count payroll.count 100 %}%</span> of total payslips
               </p>
             </div>
           </div>
@@ -85,8 +85,8 @@
             <div class="card-header p-2 ps-3">
               <div class="d-flex justify-content-between">
                 <div>
-                  <p class="text-sm mb-0 text-capitalize">Contracts Pending Renewal</p>
-                  <h4 class="mb-0">{{ pending_renewal.count }}</h4>
+                  <p class="text-sm mb-0 text-capitalize">Rejected</p>
+                  <h4 class="mb-0">{{ rejected.count }}</h4>
                 </div>
                 <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark text-center border-radius-lg">
                   <i class="fas fa-file-alt"></i>
@@ -96,7 +96,7 @@
             <hr class="dark horizontal my-0">
             <div class="card-footer p-2 ps-3">
               <p class="mb-0 text-sm">
-                <span class="text-warning font-weight-bolder">{% widthratio pending_renewal.count contracts.count 100 %}%</span> of total contracts
+                <span class="text-warning font-weight-bolder">{% widthratio rejected.count payroll.count 100 %}%</span> of total payslips
               </p>
             </div>
           </div>
@@ -295,16 +295,16 @@
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div class="align-middle">
                               <a href="{% url 'payroll:payroll_detail' payslip.id %}" class="text-purple-600 hover:text-purple-900 mr-3" title="View">
-                                  <i class="fas fa-eye fa-lg"></i>
+                                  <i class="fas fa-eye fa-sm"></i>
                               </a>
                               <a href="{% url 'payroll:payroll_update' payslip.id %}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
-                                  <i class="fas fa-pen fa-lg"></i>
+                                  <i class="fas fa-pen fa-sm"></i>
                               </a>
                               <a href="{% url 'payroll:payroll_process' payslip.id 'approve' %}"  class="text-green-600 hover:text-green-900 mr-3" title="Approve">
-                                  <i class="fas fa-thumbs-up fa-lg"></i>                                                                   
+                                  <i class="fas fa-thumbs-up fa-sm"></i>                                                                   
                               </a>
                               <a href="{% url 'payroll:payroll_process' payslip.id 'reject' %}" class="text-green-600 hover:text-green-900 mr-3" title="reject">
-                                  <i class="fas fa-times fa-lg"></i>                                 
+                                  <i class="fas fa-times fa-sm"></i>                                 
                               </a>
                           </div>
                       </td>
